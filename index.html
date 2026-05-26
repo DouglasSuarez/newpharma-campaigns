@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planificación NewPharma</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #1a1a1a;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .auth-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="email"], input[type="password"] {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            width: 150px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #6B8E23;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #556b1a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 142, 35, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .control-group label {
+            font-weight: 500;
+            color: #333;
+            font-size: 13px;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            min-width: 150px;
+        }
+
+        .calendar-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            min-height: 300px;
+        }
+
+        .calendar-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .day-header {
+            font-weight: 600;
+            text-align: center;
+            color: #6B8E23;
+            padding: 12px;
+            font-size: 12px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #fafafa;
+            position: relative;
+            min-height: 70px;
+            font-size: 12px;
+        }
+
+        .calendar-day:hover {
+            border-color: #6B8E23;
+            background: #f0f8e8;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(107, 142, 35, 0.2);
+        }
+
+        .calendar-day.has-campaign {
+            border-width: 2px;
+            background-color: transparent;
+        }
+
+        .calendar-day.empty {
+            background: white;
+            cursor: default;
+            border-color: transparent;
+        }
+
+        .calendar-day.empty:hover {
+            border-color: transparent;
+            background: white;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .day-number {
+            font-weight: 700;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .day-campaign-name {
+            font-size: 10px;
+            font-weight: 600;
+            margin-top: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.2;
+        }
+
+        .campaigns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .campaign-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 5px solid;
+        }
+
+        .campaign-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .campaign-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #6B8E23;
+            padding-bottom: 12px;
+        }
+
+        .campaign-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .campaign-dates {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-planned {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-completed {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .campaign-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stat {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #6B8E23;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #999;
+            margin-top: 3px;
+            text-transform: uppercase;
+        }
+
+        .progress-container {
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6B8E23, #9ACD32);
+            transition: width 0.3s;
+        }
+
+        .products {
+            margin-bottom: 12px;
+        }
+
+        .product-tag {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tab-button {
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #999;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tab-button:hover {
+            color: #6B8E23;
+        }
+
+        .tab-button.active {
+            color: #6B8E23;
+            border-bottom-color: #6B8E23;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .task-category {
+            margin-bottom: 12px;
+        }
+
+        .task-category-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .task-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #6B8E23;
+        }
+
+        .task-item.completed {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .price-table th {
+            background: #f5f5f5;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .price-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-expand {
+            flex: 1;
+            background: #f0f0f0;
+            color: #333;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .btn-expand:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-delete {
+            background: #ffebee;
+            color: #c62828;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .btn-delete:hover {
+            background: #ffcdd2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6B8E23 0%, #9ACD32 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1a1a1a;
+        }
+
+        .login-box input {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .login-box button {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: auto;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .campaigns-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+            margin-top: 20px;
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-tab-button {
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #999;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .modal-tab-button:hover {
+            color: #6B8E23;
+        }
+
+        .modal-tab-button.active {
+            color: #6B8E23;
+            border-bottom-color: #6B8E23;
+        }
+
+        .modal-tab-content {
+            display: none;
+        }
+
+        .modal-tab-content.active {
+            display: block;
+        }
+
+        .color-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .color-option {
+            width: 100%;
+            height: 40px;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.05);
+        }
+
+        .color-option.selected {
+            border-color: #333;
+            box-shadow: 0 0 8px rgba(0,0,0,0.3);
+        }
+
+        .products-dropdown {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .product-option {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        .product-option:hover {
+            background: #f5f5f5;
+        }
+
+        .product-option-price {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .prices-list {
+            margin-bottom: 15px;
+        }
+
+        .price-row {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .price-row-label {
+            font-weight: 500;
+            color: #333;
+            font-size: 12px;
+        }
+
+        .price-row input {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .price-row button {
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .campaigns-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .calendar-grid {
+                gap: 4px;
+            }
+
+            .calendar-day {
+                padding: 6px;
+                min-height: 50px;
+                font-size: 10px;
+            }
+
+            .day-number {
+                font-size: 12px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-group {
+                width: 100%;
+            }
+
+            .control-group select {
+                width: 100%;
+            }
+
+            .price-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loginContainer" class="login-container">
+        <div class="login-box">
+            <h2>🌿 Planificación NewPharma</h2>
+            <input type="email" id="loginEmail" placeholder="Email" value="equipo@newpharma.cl">
+            <input type="password" id="loginPassword" placeholder="Contraseña" value="NewPharma2024">
+            <button class="btn-primary" onclick="login()">Ingresar</button>
+        </div>
+    </div>
+
+    <div id="mainApp" style="display: none;">
+        <div class="container">
+            <div class="header">
+                <div>
+                    <h1>🌿 Planificación NewPharma</h1>
+                    <p>Gestiona todas tus campañas de marketing en un solo lugar</p>
+                </div>
+                <div class="header-right">
+                    <div class="auth-section">
+                        <span id="userEmail" style="font-size: 13px; color: #666;"></span>
+                        <button class="btn-secondary" onclick="logout()">Salir</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Mes:</label>
+                    <select id="monthSelect" onchange="loadMonth()">
+                        <option value="0">Enero 2026</option>
+                        <option value="1">Febrero 2026</option>
+                        <option value="2">Marzo 2026</option>
+                        <option value="3">Abril 2026</option>
+                        <option value="4">Mayo 2026</option>
+                        <option value="5">Junio 2026</option>
+                        <option value="6">Julio 2026</option>
+                        <option value="7">Agosto 2026</option>
+                        <option value="8" selected>Septiembre 2026</option>
+                        <option value="9">Octubre 2026</option>
+                        <option value="10">Noviembre 2026</option>
+                        <option value="11">Diciembre 2026</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Área Comercial:</label>
+                    <select id="areaSelect" onchange="loadMonth()">
+                        <option value="b2c">B2C (Consumidor)</option>
+                        <option value="b2b">B2B (Mayorista)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="calendar-section">
+                <div class="calendar-title" id="calendarTitle">Calendario - Septiembre 2026</div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+
+            <div class="campaigns-title">Campañas</div>
+            <div id="campaignsContainer" class="campaigns-grid"></div>
+        </div>
+    </div>
+
+    <div id="campaignModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Nueva Campaña</h2>
+            
+            <div class="modal-tabs">
+                <button class="modal-tab-button active" onclick="switchModalTab('general')">General</button>
+                <button class="modal-tab-button" onclick="switchModalTab('precios')">Precios</button>
+                <button class="modal-tab-button" onclick="switchModalTab('actividades')">Actividades</button>
+            </div>
+
+            <div id="tab-general" class="modal-tab-content active">
+                <div class="form-group">
+                    <label>Nombre de la campaña *</label>
+                    <input type="text" id="campaignName" placeholder="Ej: Hongos Funcionales">
+                </div>
+
+                <div class="form-group">
+                    <label>Fechas *</label>
+                    <input type="text" id="campaignDates" placeholder="Ej: 1-7 de julio">
+                </div>
+
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="campaignStatus">
+                        <option value="planned">Planificado</option>
+                        <option value="active">Activo</option>
+                        <option value="completed">Completado</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Color de la campaña</label>
+                    <div class="color-picker" id="colorPicker"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Productos</label>
+                    <input type="text" id="campaignProducts" placeholder="Buscar productos..." onkeyup="filterProducts()">
+                    <div class="products-dropdown" id="productsDropdown" style="display: none; margin-top: 8px;"></div>
+                </div>
+            </div>
+
+            <div id="tab-precios" class="modal-tab-content">
+                <p style="color: #666; font-size: 12px; margin-bottom: 15px;">Selecciona los productos y asigna los precios.</p>
+                <div class="prices-list" id="pricesList"></div>
+                <button class="btn-secondary" onclick="addPriceRow()" style="width: 100%;">+ Agregar Producto a Precios</button>
+            </div>
+
+            <div id="tab-actividades" class="modal-tab-content">
+                <div class="form-group">
+                    <label>Acciones Email (una por línea)</label>
+                    <textarea id="campaignEmails" placeholder="Ej: Lunes: Intro a hongos + Quiz"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Acciones Redes Sociales (una por línea)</label>
+                    <textarea id="campaignSocial" placeholder="Ej: Instagram: Reels educativos"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Acciones E-commerce (una por línea)</label>
+                    <textarea id="campaignEcommerce" placeholder="Ej: Colección destacada"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn-primary" onclick="saveCampaign()">Guardar Campaña</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const NEWPHARMA_PRODUCTS = [
+            {name: "Reishi 3:1 Sublingual", price: 13500, type: "Hongos"},
+            {name: "Cordyceps 3:1 Sublingual", price: 13500, type: "Hongos"},
+            {name: "Lion's Mane 3:1 Sublingual", price: 13500, type: "Hongos"},
+            {name: "Maitake 3:1 Sublingual", price: 13500, type: "Hongos"},
+            {name: "Triple Complex Sublingual", price: 13990, type: "Cognitivo"},
+            {name: "Creatina Monohidratada 300g", price: 10990, type: "Rendimiento"},
+            {name: "Ashwagandha 60 Cápsulas", price: 14990, type: "Estrés"},
+            {name: "Multivitamínico 60 Unidades", price: 13990, type: "Vitaminas"},
+            {name: "Vitamina D3 60 Gominolas", price: 14990, type: "Vitaminas"},
+            {name: "Coffee Creamer 180g", price: 11990, type: "Wellness"},
+            {name: "Colágeno Marino", price: 15990, type: "Belleza"},
+            {name: "Vinagre de Sidra 60 Gominolas", price: 14500, type: "Detox"},
+            {name: "Fungi Complex 60 Cápsulas", price: 13990, type: "Inmune"},
+            {name: "Reishi 60 Gominolas", price: 13990, type: "Hongos"},
+            {name: "Shiitake 60 Gominolas", price: 13990, type: "Hongos"},
+            {name: "Cola de Pavo 60 Gominolas", price: 12990, type: "Hongos"},
+            {name: "Wake Up 60 Gominolas", price: 13990, type: "Energía"},
+        ];
+
+        const COLORS = ['#6B8E23', '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181'];
+        const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+        let currentMonthIndex = 8;
+        let currentArea = 'b2c';
+        let currentUser = null;
+        let campaigns = {};
+        let selectedColor = '#6B8E23';
+        let selectedProducts = [];
+        let campaignPrices = [];
+
+        function createEmptyCampaigns() {
+            return {
+                b2c: {
+                    0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [],
+                    7: [{
+                        id: 1,
+                        name: "Hongos Funcionales",
+                        dates: "1-7 de agosto",
+                        dayStart: 1,
+                        dayEnd: 7,
+                        status: "planned",
+                        progress: 15,
+                        color: '#6B8E23',
+                        products: ["Reishi 3:1 Sublingual", "Cordyceps 3:1 Sublingual"],
+                        prices: [
+                            {product: "Reishi 3:1 Sublingual", fullPrice: 13500, discount: 25},
+                            {product: "Cordyceps 3:1 Sublingual", fullPrice: 13500, discount: 40}
+                        ],
+                        email: ["Lunes: Intro a hongos + Quiz"],
+                        social: ["Instagram: Reels educativos"],
+                        ecommerce: ["Colección destacada"]
+                    }],
+                    8: [], 9: [], 10: [], 11: []
+                },
+                b2b: {
+                    0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: []
+                }
+            };
+        }
+
+        function initData() {
+            const saved = localStorage.getItem('newpharma_campaigns');
+            if (saved) {
+                try {
+                    campaigns = JSON.parse(saved);
+                } catch(e) {
+                    campaigns = createEmptyCampaigns();
+                }
+            } else {
+                campaigns = createEmptyCampaigns();
+            }
+            // Asegurar que todas las áreas y meses existan
+            if (!campaigns.b2c) campaigns.b2c = {};
+            if (!campaigns.b2b) campaigns.b2b = {};
+            for (let i = 0; i < 12; i++) {
+                if (!campaigns.b2c[i]) campaigns.b2c[i] = [];
+                if (!campaigns.b2b[i]) campaigns.b2b[i] = [];
+            }
+        }
+
+        function saveCampaignsToStorage() {
+            localStorage.setItem('newpharma_campaigns', JSON.stringify(campaigns));
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (email && password) {
+                currentUser = email;
+                localStorage.setItem('newpharma_user', email);
+                document.getElementById('userEmail').textContent = email;
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                initData();
+                loadMonth();
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('newpharma_user');
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+        }
+
+        function loadMonth() {
+            currentMonthIndex = parseInt(document.getElementById('monthSelect').value);
+            currentArea = document.getElementById('areaSelect').value;
+            document.getElementById('calendarTitle').textContent = `Calendario - ${MONTH_NAMES[currentMonthIndex]} 2026`;
+            renderCalendar();
+            renderCampaigns();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const monthIndex = currentMonthIndex;
+            const daysInMonth = DAYS_IN_MONTH[monthIndex];
+            
+            const firstDayOfMonth = new Date(2026, monthIndex, 1);
+            let firstDayIndex = firstDayOfMonth.getDay() - 1;
+            if (firstDayIndex < 0) firstDayIndex = 6;
+            
+            const dayHeaders = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+            let html = '';
+            
+            dayHeaders.forEach(day => {
+                html += `<div class="day-header">${day}</div>`;
+            });
+            
+            for (let i = 0; i < firstDayIndex; i++) {
+                html += `<div class="calendar-day empty"></div>`;
+            }
+            
+            const monthCampaigns = campaigns[currentArea][monthIndex] || [];
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const campaign = monthCampaigns.find(c => day >= c.dayStart && day <= c.dayEnd);
+                
+                if (campaign) {
+                    html += `<div class="calendar-day has-campaign" style="border-color: ${campaign.color}; background-color: ${campaign.color}20;" onclick="openCampaignModal(${day})">
+                        <div class="day-number">${day}</div>
+                        <div class="day-campaign-name" style="color: ${campaign.color};">${campaign.name}</div>
+                    </div>`;
+                } else {
+                    html += `<div class="calendar-day" onclick="openCampaignModal(${day})">
+                        <div class="day-number">${day}</div>
+                    </div>`;
+                }
+            }
+            
+            const totalCells = firstDayIndex + daysInMonth;
+            const remainingCells = (Math.ceil(totalCells / 7) * 7) - totalCells;
+            for (let i = 0; i < remainingCells; i++) {
+                html += `<div class="calendar-day empty"></div>`;
+            }
+            
+            grid.innerHTML = html;
+        }
+
+        function renderCampaigns() {
+            const container = document.getElementById('campaignsContainer');
+            const monthCampaigns = campaigns[currentArea][currentMonthIndex] || [];
+
+            if (monthCampaigns.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">📅 No hay campañas. Haz click en un día del calendario para crear una.</div>';
+                return;
+            }
+
+            container.innerHTML = monthCampaigns.map(campaign => `
+                <div class="campaign-card" style="border-left-color: ${campaign.color};">
+                    <div class="campaign-header">
+                        <div>
+                            <div class="campaign-title">${campaign.name}</div>
+                            <div class="campaign-dates">📅 ${campaign.dates}</div>
+                        </div>
+                        <span class="status-badge status-${campaign.status}">
+                            ${campaign.status === 'planned' ? 'Planificado' : campaign.status === 'active' ? 'Activo' : 'Completado'}
+                        </span>
+                    </div>
+
+                    <div class="campaign-stats">
+                        <div class="stat">
+                            <div class="stat-value">${campaign.products.length}</div>
+                            <div class="stat-label">Productos</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${campaign.progress || 0}%</div>
+                            <div class="stat-label">Avance</div>
+                        </div>
+                    </div>
+
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${campaign.progress || 0}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="products">
+                        ${campaign.products.map(p => `<span class="product-tag">${p}</span>`).join('')}
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab-button active" onclick="switchTab(this, 'tasks-${campaign.id}')">Tareas</button>
+                        <button class="tab-button" onclick="switchTab(this, 'prices-${campaign.id}')">Precios</button>
+                    </div>
+
+                    <div id="tasks-${campaign.id}" class="tab-content active">
+                        <div class="task-category">
+                            <div class="task-category-title">📧 Email</div>
+                            ${campaign.email.map(task => `
+                                <div class="task-item" onclick="toggleTask(this)">
+                                    <input type="checkbox" class="task-checkbox" onchange="event.stopPropagation()">
+                                    <span>${task}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="task-category">
+                            <div class="task-category-title">📱 RRSS</div>
+                            ${campaign.social.map(task => `
+                                <div class="task-item" onclick="toggleTask(this)">
+                                    <input type="checkbox" class="task-checkbox" onchange="event.stopPropagation()">
+                                    <span>${task}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="task-category">
+                            <div class="task-category-title">🛒 E-commerce</div>
+                            ${campaign.ecommerce.map(task => `
+                                <div class="task-item" onclick="toggleTask(this)">
+                                    <input type="checkbox" class="task-checkbox" onchange="event.stopPropagation()">
+                                    <span>${task}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div id="prices-${campaign.id}" class="tab-content">
+                        <table class="price-table">
+                            <thead><tr><th>Producto</th><th>Precio Full</th><th>Descuento</th><th>Precio Final</th></tr></thead>
+                            <tbody>
+                                ${(campaign.prices || campaign.products.map(p => ({product: p, fullPrice: NEWPHARMA_PRODUCTS.find(prod => prod.name === p)?.price || 0, discount: 0}))).map(p => {
+                                    const discountedPrice = p.fullPrice * (1 - p.discount / 100);
+                                    return `<tr><td>${p.product}</td><td>$${p.fullPrice.toLocaleString()}</td><td>${p.discount}%</td><td>$${Math.round(discountedPrice).toLocaleString()}</td></tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card-footer">
+                        <button class="btn-expand" onclick="editCampaign(${campaign.id})">✏️ Editar</button>
+                        <button class="btn-delete" onclick="deleteCampaign(${campaign.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchTab(btn, tabId) {
+            const card = btn.closest('.campaign-card');
+            card.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            card.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function switchModalTab(tabName) {
+            document.querySelectorAll('.modal-tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.modal-tab-button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function toggleTask(element) {
+            const checkbox = element.querySelector('.task-checkbox');
+            checkbox.checked = !checkbox.checked;
+            element.classList.toggle('completed');
+        }
+
+        function renderColorPicker() {
+            const picker = document.getElementById('colorPicker');
+            picker.innerHTML = COLORS.map(color => `
+                <div class="color-option ${color === selectedColor ? 'selected' : ''}" 
+                     style="background-color: ${color};" 
+                     onclick="selectedColor = '${color}'; renderColorPicker()"></div>
+            `).join('');
+        }
+
+        function filterProducts() {
+            const input = document.getElementById('campaignProducts').value.toLowerCase();
+            const dropdown = document.getElementById('productsDropdown');
+            
+            if (!input) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            const filtered = NEWPHARMA_PRODUCTS.filter(p => p.name.toLowerCase().includes(input));
+            dropdown.innerHTML = filtered.map(p => `
+                <div class="product-option" onclick="addProduct('${p.name.replace(/'/g, "\\'")}')">
+                    <strong>${p.name}</strong>
+                    <div class="product-option-price">${p.type} · $${p.price.toLocaleString()}</div>
+                </div>
+            `).join('');
+            dropdown.style.display = 'block';
+        }
+
+        function addProduct(productName) {
+            if (!selectedProducts.includes(productName)) {
+                selectedProducts.push(productName);
+            }
+            document.getElementById('campaignProducts').value = '';
+            document.getElementById('productsDropdown').style.display = 'none';
+            renderProductsList();
+        }
+
+        function renderProductsList() {
+            document.getElementById('campaignProducts').value = selectedProducts.join(', ');
+        }
+
+        function addPriceRow() {
+            campaignPrices.push({product: '', fullPrice: 0, discount: 0});
+            renderPricesList();
+        }
+
+        function renderPricesList() {
+            const container = document.getElementById('pricesList');
+            container.innerHTML = campaignPrices.map((price, idx) => {
+                const discountedPrice = price.fullPrice * (1 - price.discount / 100);
+                
+                return `
+                    <div class="price-row">
+                        <div>
+                            <div class="price-row-label">Producto</div>
+                            <select onchange="campaignPrices[${idx}].product = this.value; if(this.value) { const p = NEWPHARMA_PRODUCTS.find(prod => prod.name === this.value); campaignPrices[${idx}].fullPrice = p.price; renderPricesList(); }" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="">-- Selecciona producto --</option>
+                                ${NEWPHARMA_PRODUCTS.map(p => `<option value="${p.name}" ${price.product === p.name ? 'selected' : ''}>${p.name} (${p.type})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <div class="price-row-label">Precio Full</div>
+                            <input type="number" value="${price.fullPrice}" onchange="campaignPrices[${idx}].fullPrice = parseFloat(this.value); renderPricesList();" placeholder="0">
+                        </div>
+                        <div>
+                            <div class="price-row-label">Descuento %</div>
+                            <input type="number" value="${price.discount}" onchange="campaignPrices[${idx}].discount = parseFloat(this.value); renderPricesList();" placeholder="0" min="0" max="100">
+                        </div>
+                        <div>
+                            <div class="price-row-label">Precio Final</div>
+                            <input type="number" disabled value="${Math.round(discountedPrice)}" style="background: #f5f5f5;" placeholder="0">
+                        </div>
+                        <button class="btn-delete" onclick="campaignPrices.splice(${idx}, 1); renderPricesList();">×</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openCampaignModal(day = null) {
+            selectedColor = '#6B8E23';
+            selectedProducts = [];
+            campaignPrices = [];
+            renderColorPicker();
+            renderPricesList();
+            document.getElementById('campaignName').value = '';
+            document.getElementById('campaignDates').value = day ? `${day}-${day+6} de ${MONTHS[currentMonthIndex].toLowerCase()}` : '';
+            document.getElementById('campaignStatus').value = 'planned';
+            document.getElementById('campaignProducts').value = '';
+            document.getElementById('campaignEmails').value = '';
+            document.getElementById('campaignSocial').value = '';
+            document.getElementById('campaignEcommerce').value = '';
+            document.getElementById('productsDropdown').style.display = 'none';
+            
+            document.getElementById('modalTitle').textContent = 'Nueva Campaña';
+            document.getElementById('campaignModal').classList.add('show');
+            
+            switchModalTab('general');
+        }
+
+        function editCampaign(id) {
+            const campaign = campaigns[currentArea][currentMonthIndex].find(c => c.id === id);
+            if (!campaign) return;
+
+            selectedColor = campaign.color;
+            selectedProducts = [...campaign.products];
+            campaignPrices = [...(campaign.prices || [])];
+            renderColorPicker();
+            renderPricesList();
+            
+            document.getElementById('campaignName').value = campaign.name;
+            document.getElementById('campaignDates').value = campaign.dates;
+            document.getElementById('campaignStatus').value = campaign.status;
+            renderProductsList();
+            document.getElementById('campaignEmails').value = campaign.email.join('\n');
+            document.getElementById('campaignSocial').value = campaign.social.join('\n');
+            document.getElementById('campaignEcommerce').value = campaign.ecommerce.join('\n');
+            
+            document.getElementById('modalTitle').textContent = 'Editar Campaña';
+            document.getElementById('campaignModal').classList.add('show');
+            document.getElementById('campaignModal').dataset.editId = id;
+            
+            switchModalTab('general');
+        }
+
+        function saveCampaign() {
+            const name = document.getElementById('campaignName').value.trim();
+            const dates = document.getElementById('campaignDates').value.trim();
+            const status = document.getElementById('campaignStatus').value;
+            const emails = document.getElementById('campaignEmails').value.trim().split('\n').filter(e => e.trim());
+            const social = document.getElementById('campaignSocial').value.trim().split('\n').filter(s => s.trim());
+            const ecommerce = document.getElementById('campaignEcommerce').value.trim().split('\n').filter(e => e.trim());
+
+            if (!name || !dates) {
+                alert('Por favor completa nombre y fechas');
+                return;
+            }
+
+            const dateMatch = dates.match(/(\d+)-(\d+)/);
+            const dayStart = dateMatch ? parseInt(dateMatch[1]) : 1;
+            const dayEnd = dateMatch ? parseInt(dateMatch[2]) : dayStart + 6;
+
+            const modal = document.getElementById('campaignModal');
+            const editId = modal.dataset.editId;
+
+            if (editId) {
+                const campaign = campaigns[currentArea][currentMonthIndex].find(c => c.id == editId);
+                if (campaign) {
+                    campaign.name = name;
+                    campaign.dates = dates;
+                    campaign.dayStart = dayStart;
+                    campaign.dayEnd = dayEnd;
+                    campaign.status = status;
+                    campaign.color = selectedColor;
+                    campaign.products = selectedProducts;
+                    campaign.prices = campaignPrices;
+                    campaign.email = emails;
+                    campaign.social = social;
+                    campaign.ecommerce = ecommerce;
+                }
+                delete modal.dataset.editId;
+            } else {
+                const newId = Math.max(0, ...campaigns[currentArea][currentMonthIndex].map(c => c.id || 0)) + 1;
+                campaigns[currentArea][currentMonthIndex].push({
+                    id: newId,
+                    name,
+                    dates,
+                    dayStart,
+                    dayEnd,
+                    status,
+                    progress: 0,
+                    color: selectedColor,
+                    products: selectedProducts,
+                    prices: campaignPrices,
+                    email: emails,
+                    social,
+                    ecommerce
+                });
+            }
+
+            saveCampaignsToStorage();
+            closeModal();
+            renderCalendar();
+            renderCampaigns();
+        }
+
+        function closeModal() {
+            document.getElementById('campaignModal').classList.remove('show');
+        }
+
+        function deleteCampaign(id) {
+            if (confirm('¿Eliminar esta campaña?')) {
+                campaigns[currentArea][currentMonthIndex] = campaigns[currentArea][currentMonthIndex].filter(c => c.id !== id);
+                saveCampaignsToStorage();
+                renderCalendar();
+                renderCampaigns();
+            }
+        }
+
+        window.addEventListener('load', function() {
+            const saved = localStorage.getItem('newpharma_user');
+            if (saved) {
+                currentUser = saved;
+                document.getElementById('userEmail').textContent = saved;
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                initData();
+                loadMonth();
+            }
+        });
+
+        document.getElementById('campaignModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+</html>
