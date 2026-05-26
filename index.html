@@ -20,7 +20,7 @@
         .btn-primary:hover { background: #556b1a; }
         .btn-secondary { background: #f0f0f0; color: #333; }
         .btn-pdf { background: #2196F3; color: white; padding: 8px 16px; font-size: 12px; }
-        .controls { display: flex; gap: 15px; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex-wrap: wrap; }
         .control-group { display: flex; gap: 10px; align-items: center; }
         .control-group label { font-weight: 500; color: #333; font-size: 13px; }
         select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: 'Inter', sans-serif; }
@@ -93,6 +93,7 @@
                         <option value="b2b">B2B (Mayorista)</option>
                     </select>
                 </div>
+                <button class="btn-pdf" onclick="exportFullPDF()" style="margin-left: auto;">📥 Descargar Mes Completo (PDF)</button>
             </div>
 
             <div class="tabs-container">
@@ -199,7 +200,6 @@
 
         const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
         const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        const COLORS = ['#6B8E23', '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181'];
 
         let currentMonthIndex = 8;
         let currentArea = 'b2c';
@@ -272,15 +272,11 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const campaign = monthCampaigns.find(c => day >= c.dayStart && day <= c.dayEnd);
                 if (campaign) {
-                    html += `<div class="calendar-day" style="border-color: ${campaign.color}; background-color: ${campaign.color}20;">
-                        <div class="day-number">${day}</div>
-                        <div style="font-size: 10px; color: ${campaign.color};">${campaign.name}</div>
-                    </div>`;
+                    html += `<div class="calendar-day" style="border-color: ${campaign.color}; background-color: ${campaign.color}20;"><div class="day-number">${day}</div><div style="font-size: 10px; color: ${campaign.color};">${campaign.name}</div></div>`;
                 } else {
                     html += `<div class="calendar-day"><div class="day-number">${day}</div></div>`;
                 }
             }
-            
             grid.innerHTML = html;
         }
 
@@ -295,14 +291,9 @@
             
             container.innerHTML = monthCampaigns.map(c => `
                 <div class="campaign-card" style="border-left-color: ${c.color};">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <div>
-                            <div class="campaign-title">${c.name}</div>
-                            <div style="font-size: 12px; color: #999;">📅 ${c.dates}</div>
-                        </div>
-                    </div>
-                    <div style="margin-bottom: 12px;">${c.products.map(p => `<span class="product-tag">${p}</span>`).join('')}</div>
-                    <button class="btn-pdf" onclick="exportPDF('${c.id}')">📥 Descargar PDF</button>
+                    <div class="campaign-title">${c.name}</div>
+                    <div style="font-size: 12px; color: #999; margin-bottom: 10px;">📅 ${c.dates}</div>
+                    <div>${c.products.map(p => `<span class="product-tag">${p}</span>`).join('')}</div>
                 </div>
             `).join('');
         }
@@ -328,23 +319,102 @@
                 const dateObj = new Date(s.date);
                 const day = dateObj.getDate();
                 const campaign = campaigns[currentArea][currentMonthIndex].find(c => day >= c.dayStart && day <= c.dayEnd);
-                return `<tr>
-                    <td>${new Date(s.date).toLocaleDateString('es-CL')}</td>
-                    <td>${s.product}</td>
-                    <td>${s.quantity}</td>
-                    <td>$${s.revenue.toLocaleString()}</td>
-                    <td>${campaign ? campaign.name : '-'}</td>
-                </tr>`;
+                return `<tr><td>${new Date(s.date).toLocaleDateString('es-CL')}</td><td>${s.product}</td><td>${s.quantity}</td><td>$${s.revenue.toLocaleString()}</td><td>${campaign ? campaign.name : '-'}</td></tr>`;
             }).join('');
         }
 
-        function exportPDF(campaignId) {
-            const campaign = campaigns[currentArea][currentMonthIndex].find(c => c.id == campaignId);
-            if (!campaign) return;
-            const html = `<div style="padding: 20px;"><h1>${campaign.name}</h1><p>${campaign.dates}</p></div>`;
+        function exportFullPDF() {
+            const monthCampaigns = campaigns[currentArea][currentMonthIndex] || [];
+            
+            let htmlContent = `<div style="font-family: Arial, sans-serif;">
+                <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #6B8E23; padding-bottom: 20px;">
+                    <h1 style="color: #6B8E23; margin: 0;">🌿 PLANIFICACIÓN NEWPHARMA</h1>
+                    <h2 style="color: #333; margin: 10px 0;">${MONTH_NAMES[currentMonthIndex]} 2026</h2>
+                    <p style="color: #999; margin: 0;">Área: ${currentArea === 'b2c' ? 'B2C (Consumidor)' : 'B2B (Mayorista)'}</p>
+                    <p style="color: #999; margin: 5px 0;">Fecha: ${new Date().toLocaleDateString('es-CL')}</p>
+                </div>
+                <div style="margin-bottom: 40px;">
+                    <h2 style="color: #6B8E23; margin-bottom: 15px; font-size: 18px;">CALENDARIO</h2>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <tr>
+                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">L</td>
+                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">M</td>
+                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">M</td>
+                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">J</td>
+                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">V</td>
+                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">S</td>
+                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">D</td>
+                        </tr>`;
+            
+            const daysInMonth = DAYS_IN_MONTH[currentMonthIndex];
+            const firstDay = new Date(2026, currentMonthIndex, 1).getDay() - 1;
+            let cellCount = 0;
+            
+            htmlContent += '<tr>';
+            for (let i = 0; i < Math.max(0, firstDay); i++) {
+                htmlContent += '<td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"></td>';
+                cellCount++;
+            }
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const campaign = monthCampaigns.find(c => day >= c.dayStart && day <= c.dayEnd);
+                const bgColor = campaign ? `${campaign.color}20` : '#fff';
+                const borderColor = campaign ? campaign.color : '#ddd';
+                
+                htmlContent += `<td style="padding: 8px; border: 2px solid ${borderColor}; background: ${bgColor}; text-align: center; height: 50px; vertical-align: top;"><strong>${day}</strong>${campaign ? `<br/><span style="font-size: 8px; color: ${campaign.color};">${campaign.name}</span>` : ''}</td>`;
+                
+                cellCount++;
+                if (cellCount % 7 === 0) htmlContent += '</tr><tr>';
+            }
+            
+            const remaining = 7 - (cellCount % 7);
+            if (remaining < 7) {
+                for (let i = 0; i < remaining; i++) {
+                    htmlContent += '<td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"></td>';
+                }
+            }
+            htmlContent += '</tr></table></div>';
+
+            htmlContent += `<div style="page-break-before: always;"><h2 style="color: #6B8E23; margin-bottom: 20px; font-size: 18px;">CAMPAÑAS DEL MES</h2>`;
+            
+            monthCampaigns.forEach((campaign, idx) => {
+                htmlContent += `<div style="margin-bottom: 30px; border-left: 5px solid ${campaign.color}; padding-left: 15px; page-break-inside: avoid;">
+                    <h3 style="color: #333; margin: 0 0 5px 0; font-size: 16px;">${idx + 1}. ${campaign.name}</h3>
+                    <p style="color: #999; margin: 0 0 15px 0; font-size: 12px;">📅 ${campaign.dates}</p>
+                    
+                    <h4 style="color: #6B8E23; margin: 0 0 10px 0; font-size: 12px;">PRODUCTOS Y PRECIOS</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <tr style="background: #f5f5f5;">
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Producto</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Precio Full</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">Desc%</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Precio Final</th>
+                        </tr>
+                        ${(campaign.prices || campaign.products.map(p => {const prod = PRODUCTS.find(x => x.name === p); return {product: p, fullPrice: prod?.price || 0, discount: 0};})).map(p => {const final = Math.round(p.fullPrice * (1 - p.discount / 100)); return `<tr><td style="padding: 8px; border: 1px solid #ddd;">${p.product}</td><td style="padding: 8px; border: 1px solid #ddd; text-align: right;">$${p.fullPrice.toLocaleString()}</td><td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${p.discount}%</td><td style="padding: 8px; border: 1px solid #ddd; text-align: right;">$${final.toLocaleString()}</td></tr>`;}).join('')}
+                    </table>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div><h4 style="color: #6B8E23; margin: 0 0 8px 0; font-size: 11px;">📧 EMAIL</h4><ul style="margin: 0; padding-left: 18px; font-size: 10px;">${(campaign.email || []).map(task => `<li style="margin-bottom: 4px;">${task}</li>`).join('') || '<li style="color: #999;">Sin tareas</li>'}</ul></div>
+                        <div><h4 style="color: #6B8E23; margin: 0 0 8px 0; font-size: 11px;">📱 RRSS</h4><ul style="margin: 0; padding-left: 18px; font-size: 10px;">${(campaign.social || []).map(task => `<li style="margin-bottom: 4px;">${task}</li>`).join('') || '<li style="color: #999;">Sin tareas</li>'}</ul></div>
+                        <div><h4 style="color: #6B8E23; margin: 0 0 8px 0; font-size: 11px;">🛒 E-COMMERCE</h4><ul style="margin: 0; padding-left: 18px; font-size: 10px;">${(campaign.ecommerce || []).map(task => `<li style="margin-bottom: 4px;">${task}</li>`).join('') || '<li style="color: #999;">Sin tareas</li>'}</ul></div>
+                    </div>
+                </div>`;
+            });
+
+            htmlContent += `</div><div style="margin-top: 40px; text-align: center; border-top: 2px solid #6B8E23; padding-top: 20px; color: #999; font-size: 11px;"><p>Planificación NewPharma v2.0</p></div></div>`;
+
             const element = document.createElement('div');
-            element.innerHTML = html;
-            html2pdf().set({margin: 10, filename: `${campaign.name}.pdf`}).from(element).save();
+            element.innerHTML = htmlContent;
+            
+            const opt = {
+                margin: 10,
+                filename: `Planificacion_${MONTH_NAMES[currentMonthIndex]}_${currentArea.toUpperCase()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+
+            html2pdf().set(opt).from(element).save();
         }
 
         window.addEventListener('load', function() {
