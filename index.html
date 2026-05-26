@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planificación NewPharma v2.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 28px; color: #1a1a1a; margin-bottom: 5px; }
+        .header p { color: #666; font-size: 14px; }
+        button { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.3s; font-size: 14px; }
+        .btn-primary { background: #6B8E23; color: white; }
+        .btn-primary:hover { background: #556b1a; }
+        .btn-secondary { background: #f0f0f0; color: #333; }
+        .btn-pdf { background: #2196F3; color: white; padding: 8px 16px; font-size: 12px; }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .control-group { display: flex; gap: 10px; align-items: center; }
+        .control-group label { font-weight: 500; color: #333; font-size: 13px; }
+        select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: 'Inter', sans-serif; }
+        .tabs-container { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .tabs-header { display: flex; border-bottom: 2px solid #eee; padding: 0 20px; }
+        .tab-button { padding: 16px 20px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #999; border-bottom: 3px solid transparent; }
+        .tab-button.active { color: #6B8E23; border-bottom-color: #6B8E23; }
+        .tabs-content { padding: 30px; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .calendar-section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .calendar-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .day-header { font-weight: 600; text-align: center; color: #6B8E23; padding: 12px; font-size: 12px; background: #f5f5f5; border-radius: 4px; }
+        .calendar-day { border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; cursor: pointer; min-height: 80px; font-size: 12px; }
+        .day-number { font-weight: 700; color: #333; font-size: 14px; }
+        .campaigns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .campaign-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 5px solid; }
+        .campaign-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .product-tag { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 12px; font-size: 11px; margin-right: 4px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #333; font-size: 13px; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Inter', sans-serif; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .sales-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 20px; }
+        .sales-table th { background: #f5f5f5; padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+        .sales-table td { padding: 12px; border-bottom: 1px solid #eee; }
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #6B8E23 0%, #9ACD32 100%); }
+        .login-box { background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; }
+        .login-box input { width: 100%; margin-bottom: 15px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; }
+        @media (max-width: 768px) { .campaigns-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div id="loginContainer" class="login-container">
+        <div class="login-box">
+            <h2 style="text-align: center; margin-bottom: 30px;">🌿 Planificación NewPharma v2.0</h2>
+            <input type="email" id="loginEmail" placeholder="Email" value="equipo@newpharma.cl">
+            <input type="password" id="loginPassword" placeholder="Contraseña" value="NewPharma2024">
+            <button class="btn-primary" style="width: 100%;" onclick="login()">Ingresar</button>
+        </div>
+    </div>
+
+    <div id="mainApp" style="display: none;">
+        <div class="container">
+            <div class="header">
+                <div>
+                    <h1>🌿 Planificación NewPharma v2.0</h1>
+                    <p>Gestiona campañas, ventas y análisis</p>
+                </div>
+                <div>
+                    <span id="userEmail" style="font-size: 13px; color: #666; margin-right: 15px;"></span>
+                    <button class="btn-secondary" onclick="logout()">Salir</button>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Mes:</label>
+                    <select id="monthSelect" onchange="loadMonth()">
+                        <option value="8" selected>Septiembre 2026</option>
+                        <option value="7">Agosto 2026</option>
+                        <option value="0">Enero 2026</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Área:</label>
+                    <select id="areaSelect" onchange="loadMonth()">
+                        <option value="b2c">B2C (Consumidor)</option>
+                        <option value="b2b">B2B (Mayorista)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-button active" onclick="switchTab(event, 'campanas')">📅 Campañas</button>
+                    <button class="tab-button" onclick="switchTab(event, 'ventas')">💰 Ventas</button>
+                    <button class="tab-button" onclick="switchTab(event, 'analisis')">📊 Análisis</button>
+                </div>
+
+                <div class="tabs-content">
+                    <div id="campanas" class="tab-pane active">
+                        <div class="calendar-section">
+                            <div class="calendar-title">Calendario</div>
+                            <div class="calendar-grid" id="calendarGrid"></div>
+                        </div>
+                        <h3 style="margin-top: 40px; margin-bottom: 20px;">Campañas</h3>
+                        <div id="campaignsContainer" class="campaigns-grid"></div>
+                    </div>
+
+                    <div id="ventas" class="tab-pane">
+                        <h3 style="margin-bottom: 20px;">Registrar Ventas</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Producto</label>
+                                <select id="saleProduct"><option value="">-- Selecciona --</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Cantidad</label>
+                                <input type="number" id="saleQuantity" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha</label>
+                                <input type="date" id="saleDate">
+                            </div>
+                            <div class="form-group" style="display: flex; align-items: flex-end;">
+                                <button class="btn-primary" onclick="addSale()">Registrar</button>
+                            </div>
+                        </div>
+                        <h3 style="margin-top: 40px; margin-bottom: 20px;">Ventas Registradas</h3>
+                        <table class="sales-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Ingresos</th>
+                                    <th>Campaña</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="analisis" class="tab-pane">
+                        <h3 style="margin-bottom: 20px;">Resumen por Campaña</h3>
+                        <table class="sales-table">
+                            <thead>
+                                <tr>
+                                    <th>Campaña</th>
+                                    <th>Unidades</th>
+                                    <th>Ingresos</th>
+                                    <th>% Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="campaignAnalysisTable"></tbody>
+                        </table>
+                        <h3 style="margin-top: 40px; margin-bottom: 20px;">Estadísticas</h3>
+                        <div class="campaigns-grid">
+                            <div class="campaign-card">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 24px; font-weight: 700; color: #6B8E23;" id="totalSales">0</div>
+                                    <div style="font-size: 12px; color: #999; margin-top: 5px;">Unidades</div>
+                                </div>
+                            </div>
+                            <div class="campaign-card">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 24px; font-weight: 700; color: #6B8E23;" id="totalRevenue">$0</div>
+                                    <div style="font-size: 12px; color: #999; margin-top: 5px;">Ingresos</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PRODUCTS = [
+            {name: "Reishi 3:1 Sublingual", price: 13500},
+            {name: "Cordyceps 3:1 Sublingual", price: 13500},
+            {name: "Lion's Mane 3:1 Sublingual", price: 13500},
+            {name: "Triple Complex Sublingual", price: 13990},
+            {name: "Creatina 300g", price: 10990},
+            {name: "Ashwagandha 60 Cápsulas", price: 14990},
+            {name: "Vitamina D3 60 Gominolas", price: 14990},
+            {name: "Coffee Creamer 180g", price: 11990},
+            {name: "Vinagre de Sidra 60 Gominolas", price: 14500},
+            {name: "Fungi Complex 60 Cápsulas", price: 13990},
+            {name: "Reishi 60 Gominolas", price: 13990},
+            {name: "Shiitake 60 Gominolas", price: 13990},
+            {name: "Wake Up 60 Gominolas", price: 13990},
+        ];
+
+        const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const COLORS = ['#6B8E23', '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181'];
+
+        let currentMonthIndex = 8;
+        let currentArea = 'b2c';
+        let campaigns = {};
+        let sales = [];
+
+        function initData() {
+            campaigns = JSON.parse(localStorage.getItem('newpharma_campaigns') || '{"b2c":{}, "b2b":{}}');
+            sales = JSON.parse(localStorage.getItem('newpharma_sales') || '[]');
+            
+            for (let i = 0; i < 12; i++) {
+                if (!campaigns.b2c) campaigns.b2c = {};
+                if (!campaigns.b2b) campaigns.b2b = {};
+                if (!campaigns.b2c[i]) campaigns.b2c[i] = [];
+                if (!campaigns.b2b[i]) campaigns.b2b[i] = [];
+            }
+            
+            const select = document.getElementById('saleProduct');
+            select.innerHTML = '<option value="">-- Selecciona --</option>' +
+                PRODUCTS.map(p => `<option value="${p.name}">$${p.price} - ${p.name}</option>`).join('');
+            
+            document.getElementById('saleDate').valueAsDate = new Date();
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            if (email) {
+                localStorage.setItem('newpharma_user', email);
+                document.getElementById('userEmail').textContent = email;
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                initData();
+                loadMonth();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('newpharma_user');
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+        }
+
+        function switchTab(e, tabName) {
+            document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            e.target.classList.add('active');
+        }
+
+        function loadMonth() {
+            currentMonthIndex = parseInt(document.getElementById('monthSelect').value);
+            currentArea = document.getElementById('areaSelect').value;
+            renderCalendar();
+            renderCampaigns();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const daysInMonth = DAYS_IN_MONTH[currentMonthIndex];
+            const firstDay = new Date(2026, currentMonthIndex, 1).getDay() - 1;
+            const monthCampaigns = campaigns[currentArea][currentMonthIndex] || [];
+            
+            let html = '';
+            ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].forEach(day => {
+                html += `<div class="day-header">${day}</div>`;
+            });
+            
+            for (let i = 0; i < Math.max(0, firstDay); i++) html += '<div class="calendar-day" style="background: white; border: none;"></div>';
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const campaign = monthCampaigns.find(c => day >= c.dayStart && day <= c.dayEnd);
+                if (campaign) {
+                    html += `<div class="calendar-day" style="border-color: ${campaign.color}; background-color: ${campaign.color}20;">
+                        <div class="day-number">${day}</div>
+                        <div style="font-size: 10px; color: ${campaign.color};">${campaign.name}</div>
+                    </div>`;
+                } else {
+                    html += `<div class="calendar-day"><div class="day-number">${day}</div></div>`;
+                }
+            }
+            
+            grid.innerHTML = html;
+        }
+
+        function renderCampaigns() {
+            const container = document.getElementById('campaignsContainer');
+            const monthCampaigns = campaigns[currentArea][currentMonthIndex] || [];
+            
+            if (monthCampaigns.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">No hay campañas</div>';
+                return;
+            }
+            
+            container.innerHTML = monthCampaigns.map(c => `
+                <div class="campaign-card" style="border-left-color: ${c.color};">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div>
+                            <div class="campaign-title">${c.name}</div>
+                            <div style="font-size: 12px; color: #999;">📅 ${c.dates}</div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">${c.products.map(p => `<span class="product-tag">${p}</span>`).join('')}</div>
+                    <button class="btn-pdf" onclick="exportPDF('${c.id}')">📥 Descargar PDF</button>
+                </div>
+            `).join('');
+        }
+
+        function addSale() {
+            const product = document.getElementById('saleProduct').value;
+            const quantity = parseInt(document.getElementById('saleQuantity').value);
+            const date = document.getElementById('saleDate').value;
+            if (!product || !quantity || !date) return;
+            
+            const productData = PRODUCTS.find(p => p.name === product);
+            sales.push({date, product, quantity, price: productData.price, revenue: quantity * productData.price, month: currentMonthIndex, area: currentArea});
+            localStorage.setItem('newpharma_sales', JSON.stringify(sales));
+            renderSalesTable();
+            document.getElementById('saleQuantity').value = '';
+        }
+
+        function renderSalesTable() {
+            const tbody = document.getElementById('salesTableBody');
+            const monthSales = sales.filter(s => s.month === currentMonthIndex && s.area === currentArea);
+            
+            tbody.innerHTML = monthSales.map(s => {
+                const dateObj = new Date(s.date);
+                const day = dateObj.getDate();
+                const campaign = campaigns[currentArea][currentMonthIndex].find(c => day >= c.dayStart && day <= c.dayEnd);
+                return `<tr>
+                    <td>${new Date(s.date).toLocaleDateString('es-CL')}</td>
+                    <td>${s.product}</td>
+                    <td>${s.quantity}</td>
+                    <td>$${s.revenue.toLocaleString()}</td>
+                    <td>${campaign ? campaign.name : '-'}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function exportPDF(campaignId) {
+            const campaign = campaigns[currentArea][currentMonthIndex].find(c => c.id == campaignId);
+            if (!campaign) return;
+            const html = `<div style="padding: 20px;"><h1>${campaign.name}</h1><p>${campaign.dates}</p></div>`;
+            const element = document.createElement('div');
+            element.innerHTML = html;
+            html2pdf().set({margin: 10, filename: `${campaign.name}.pdf`}).from(element).save();
+        }
+
+        window.addEventListener('load', function() {
+            const saved = localStorage.getItem('newpharma_user');
+            if (saved) {
+                document.getElementById('loginEmail').value = saved;
+                login();
+            }
+        });
+    </script>
+</body>
+</html>
