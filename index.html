@@ -33,19 +33,34 @@
         .tab-pane { display: none; }
         .tab-pane.active { display: block; }
         .calendar-section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        .calendar-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+        .calendar-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #1a1a1a; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
         .day-header { font-weight: 600; text-align: center; color: #6B8E23; padding: 12px; font-size: 12px; background: #f5f5f5; border-radius: 4px; }
-        .calendar-day { border: 2px solid #ddd; border-radius: 6px; padding: 10px; cursor: pointer; min-height: 80px; font-size: 12px; background: white; transition: all 0.2s; }
-        .calendar-day:hover { background: #f9f9f9; border-color: #6B8E23; }
-        .calendar-day.empty { background: #f5f5f5; cursor: default; border: none; }
+        .calendar-day { border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; cursor: pointer; min-height: 80px; font-size: 12px; background: white; transition: all 0.2s; }
+        .calendar-day:hover { border-color: #6B8E23; background: #f0f8e8; }
+        .calendar-day.empty { background: white; cursor: default; border-color: transparent; }
+        .calendar-day.empty:hover { background: white; border-color: transparent; }
         .day-number { font-weight: 700; color: #333; font-size: 14px; }
+        .day-campaign { font-size: 10px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .campaigns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
         .campaign-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 5px solid; }
+        .campaign-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 2px solid #6B8E23; padding-bottom: 12px; }
         .campaign-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
-        .product-tag { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 12px; font-size: 11px; margin-right: 4px; }
+        .campaign-dates { font-size: 12px; color: #999; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+        .status-planned { background: #e3f2fd; color: #1565c0; }
+        .campaign-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+        .stat { background: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center; }
+        .stat-value { font-size: 16px; font-weight: 700; color: #6B8E23; }
+        .stat-label { font-size: 10px; color: #999; margin-top: 3px; text-transform: uppercase; }
+        .product-tag { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 12px; font-size: 11px; margin-right: 4px; margin-bottom: 4px; }
         .progress-bar { width: 100%; height: 6px; background: #e0e0e0; border-radius: 3px; margin: 5px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #6B8E23, #9ACD32); transition: width 0.3s; }
+        .card-footer { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee; }
+        .btn-expand { flex: 1; background: #f0f0f0; color: #333; padding: 8px 12px; font-size: 12px; }
+        .price-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .price-table th { background: #f5f5f5; padding: 10px; text-align: left; font-weight: 600; border-bottom: 1px solid #ddd; }
+        .price-table td { padding: 10px; border-bottom: 1px solid #eee; }
         .task-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; }
         .task-item input[type="checkbox"] { cursor: pointer; accent-color: #6B8E23; }
         .form-group { margin-bottom: 15px; }
@@ -57,14 +72,12 @@
         .sales-table td { padding: 12px; border-bottom: 1px solid #eee; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
         .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 5px solid #6B8E23; }
-        .stat-value { font-size: 32px; font-weight: 700; color: #6B8E23; }
+        .stat-card h3 { font-size: 14px; color: #666; margin-bottom: 10px; }
+        .stat-value { font-size: 32px; font-weight: 700; color: #6B8E23; margin-bottom: 10px; }
         .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #6B8E23 0%, #9ACD32 100%); }
         .login-box { background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; }
         .login-box input { width: 100%; margin-bottom: 15px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; }
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-        .modal.show { display: flex; }
-        .modal-content { background: white; padding: 30px; border-radius: 12px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; }
-        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; font-size: 14px; }
         @media (max-width: 768px) { .campaigns-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -139,7 +152,7 @@
                             <div class="calendar-title" id="calendarTitle">Calendario</div>
                             <div class="calendar-grid" id="calendarGrid"></div>
                         </div>
-                        <h3 style="margin-top: 40px; margin-bottom: 20px;">Campañas del Mes</h3>
+                        <h3 style="margin-top: 40px; margin-bottom: 20px; font-size: 16px; font-weight: 600;">Campañas del Mes</h3>
                         <div id="campaignsContainer" class="campaigns-grid"></div>
                     </div>
 
@@ -162,7 +175,7 @@
                                 <button class="btn-primary" onclick="addSale()">Registrar</button>
                             </div>
                         </div>
-                        <h3 style="margin-top: 40px; margin-bottom: 20px;">Ventas</h3>
+                        <h3 style="margin-top: 40px; margin-bottom: 20px;">Ventas Registradas</h3>
                         <table class="sales-table">
                             <thead>
                                 <tr>
@@ -177,83 +190,35 @@
                     </div>
 
                     <div id="analisis" class="tab-pane">
-                        <h3 style="margin-bottom: 30px;">% Cumplimiento</h3>
+                        <h3 style="margin-bottom: 30px;">% Cumplimiento del Mes</h3>
                         <div class="stats-grid">
                             <div class="stat-card">
                                 <h3>📧 EMAIL</h3>
                                 <div class="stat-value" id="emailPercent">0%</div>
-                                <div class="progress-bar"><div class="progress-fill" id="emailFill"></div></div>
+                                <div class="progress-bar"><div class="progress-fill" id="emailFill" style="width: 0%"></div></div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;" id="emailText">0 de 0</div>
                             </div>
                             <div class="stat-card">
                                 <h3>📱 RRSS</h3>
                                 <div class="stat-value" id="rrssPercent">0%</div>
-                                <div class="progress-bar"><div class="progress-fill" id="rrssFill"></div></div>
+                                <div class="progress-bar"><div class="progress-fill" id="rrssFill" style="width: 0%"></div></div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;" id="rrssText">0 de 0</div>
                             </div>
                             <div class="stat-card">
                                 <h3>🛒 E-COMMERCE</h3>
                                 <div class="stat-value" id="ecommercePercent">0%</div>
-                                <div class="progress-bar"><div class="progress-fill" id="ecommerceFill"></div></div>
+                                <div class="progress-bar"><div class="progress-fill" id="ecommerceFill" style="width: 0%"></div></div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;" id="ecommerceText">0 de 0</div>
                             </div>
                             <div class="stat-card" style="border-left-color: #FF6B6B;">
-                                <h3>📊 GENERAL</h3>
+                                <h3 style="color: #FF6B6B;">📊 GENERAL</h3>
                                 <div class="stat-value" id="generalPercent" style="color: #FF6B6B;">0%</div>
-                                <div class="progress-bar"><div class="progress-fill" id="generalFill" style="background: linear-gradient(90deg, #FF6B6B, #FFB3B3);"></div></div>
+                                <div class="progress-bar"><div class="progress-fill" id="generalFill" style="width: 0%; background: linear-gradient(90deg, #FF6B6B, #FFB3B3);"></div></div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;" id="generalText">0 de 0</div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL PARA CREAR/EDITAR CAMPAÑA -->
-    <div id="campaignModal" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-bottom: 20px;">Nueva Campaña</h2>
-            <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" id="campaignName" placeholder="Ej: Hongos Funcionales">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Día Inicio</label>
-                    <input type="number" id="dayStart" min="1" max="31">
-                </div>
-                <div class="form-group">
-                    <label>Día Fin</label>
-                    <input type="number" id="dayEnd" min="1" max="31">
-                </div>
-                <div class="form-group">
-                    <label>Color</label>
-                    <select id="campaignColor">
-                        <option value="#6B8E23">Verde</option>
-                        <option value="#FF6B6B">Rojo</option>
-                        <option value="#4ECDC4">Turquesa</option>
-                        <option value="#FFE66D">Amarillo</option>
-                        <option value="#95E1D3">Menta</option>
-                        <option value="#F38181">Rosa</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Productos (separados por coma)</label>
-                <input type="text" id="campaignProducts" placeholder="Reishi 3:1, Cordyceps 3:1">
-            </div>
-            <div class="form-group">
-                <label>Tareas Email (una por línea)</label>
-                <textarea id="campaignEmail" style="width: 100%; min-height: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Inter', sans-serif;"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Tareas RRSS (una por línea)</label>
-                <textarea id="campaignSocial" style="width: 100%; min-height: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Inter', sans-serif;"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Tareas E-commerce (una por línea)</label>
-                <textarea id="campaignEcommerce" style="width: 100%; min-height: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Inter', sans-serif;"></textarea>
-            </div>
-            <div class="modal-buttons">
-                <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-                <button class="btn-primary" onclick="saveCampaign()">Guardar</button>
             </div>
         </div>
     </div>
@@ -277,6 +242,7 @@
 
         const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
         const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const COLORS = ['#6B8E23', '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181'];
 
         let currentYear = 2026;
         let currentMonthIndex = 8;
@@ -284,13 +250,11 @@
         let campaigns = {};
         let sales = [];
         let taskCompletion = {};
-        let nextCampaignId = 1;
 
         function initData() {
             campaigns = JSON.parse(localStorage.getItem('newpharma_campaigns') || '{"b2c":{}, "b2b":{}}');
             sales = JSON.parse(localStorage.getItem('newpharma_sales') || '[]');
             taskCompletion = JSON.parse(localStorage.getItem('newpharma_tasks') || '{}');
-            nextCampaignId = parseInt(localStorage.getItem('newpharma_nextId') || '1');
             
             if (!campaigns.b2c) campaigns.b2c = {};
             if (!campaigns.b2b) campaigns.b2b = {};
@@ -303,7 +267,6 @@
                 }
             }
             
-            // Agregar campaña de ejemplo si no existe
             if (campaigns.b2c['2026_7'].length === 0) {
                 campaigns.b2c['2026_7'].push({
                     id: 1,
@@ -311,13 +274,19 @@
                     dates: "1-7 de agosto",
                     dayStart: 1,
                     dayEnd: 7,
+                    status: "planned",
+                    progress: 15,
                     color: '#6B8E23',
                     products: ["Reishi 3:1 Sublingual", "Cordyceps 3:1 Sublingual"],
+                    prices: [
+                        {product: "Reishi 3:1 Sublingual", fullPrice: 13500, discount: 25},
+                        {product: "Cordyceps 3:1 Sublingual", fullPrice: 13500, discount: 40}
+                    ],
                     email: ["Lunes: Intro a hongos + Quiz"],
                     social: ["Instagram: Reels educativos"],
                     ecommerce: ["Colección destacada"]
                 });
-                saveCampaigns();
+                localStorage.setItem('newpharma_campaigns', JSON.stringify(campaigns));
             }
             
             const select = document.getElementById('saleProduct');
@@ -325,10 +294,6 @@
                 PRODUCTS.map(p => `<option value="${p.name}">$${p.price} - ${p.name}</option>`).join('');
             
             document.getElementById('saleDate').valueAsDate = new Date();
-        }
-
-        function saveCampaigns() {
-            localStorage.setItem('newpharma_campaigns', JSON.stringify(campaigns));
         }
 
         function login() {
@@ -391,77 +356,47 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const campaign = monthCampaigns.find(c => day >= c.dayStart && day <= c.dayEnd);
                 if (campaign) {
-                    html += `<div class="calendar-day" style="border: 2px solid ${campaign.color}; background-color: ${campaign.color}20;" onclick="openCampaignModal()">
+                    html += `<div class="calendar-day" style="border: 2px solid ${campaign.color}; background-color: ${campaign.color}20;">
                         <div class="day-number">${day}</div>
-                        <div style="font-size: 10px; color: ${campaign.color}; margin-top: 4px;">${campaign.name}</div>
+                        <div class="day-campaign" style="color: ${campaign.color};">${campaign.name}</div>
                     </div>`;
                 } else {
-                    html += `<div class="calendar-day" onclick="openNewCampaignModal(${day})" style="cursor: pointer;">
-                        <div class="day-number">${day}</div>
-                        <div style="font-size: 10px; color: #999; margin-top: 4px;">+ Añadir</div>
-                    </div>`;
+                    html += `<div class="calendar-day"><div class="day-number">${day}</div></div>`;
                 }
             }
             
             grid.innerHTML = html;
         }
 
-        function openNewCampaignModal(day) {
-            document.getElementById('campaignName').value = '';
-            document.getElementById('dayStart').value = day;
-            document.getElementById('dayEnd').value = day;
-            document.getElementById('campaignColor').value = '#6B8E23';
-            document.getElementById('campaignProducts').value = '';
-            document.getElementById('campaignEmail').value = '';
-            document.getElementById('campaignSocial').value = '';
-            document.getElementById('campaignEcommerce').value = '';
-            document.getElementById('campaignModal').classList.add('show');
+        function getTaskKey(campaignId, type) {
+            return `${currentYear}_${currentMonthIndex}_${campaignId}_${type}`;
         }
 
-        function openCampaignModal() {
-            // Simplemente mostrar modal vacío para crear nueva campaña
-            openNewCampaignModal(1);
-        }
-
-        function closeModal() {
-            document.getElementById('campaignModal').classList.remove('show');
-        }
-
-        function saveCampaign() {
-            const name = document.getElementById('campaignName').value;
-            const dayStart = parseInt(document.getElementById('dayStart').value);
-            const dayEnd = parseInt(document.getElementById('dayEnd').value);
-            const color = document.getElementById('campaignColor').value;
-            const products = document.getElementById('campaignProducts').value.split(',').map(p => p.trim()).filter(p => p);
-            const email = document.getElementById('campaignEmail').value.split('\n').map(e => e.trim()).filter(e => e);
-            const social = document.getElementById('campaignSocial').value.split('\n').map(s => s.trim()).filter(s => s);
-            const ecommerce = document.getElementById('campaignEcommerce').value.split('\n').map(e => e.trim()).filter(e => e);
-
-            if (!name || !dayStart || !dayEnd) {
-                alert('Completa nombre y días');
-                return;
-            }
-
-            const key = getCampaignKey();
-            const newCampaign = {
-                id: nextCampaignId++,
-                name,
-                dates: `${dayStart}-${dayEnd}`,
-                dayStart,
-                dayEnd,
-                color,
-                products,
-                email,
-                social,
-                ecommerce
-            };
-
-            campaigns[currentArea][key].push(newCampaign);
-            localStorage.setItem('newpharma_nextId', nextCampaignId.toString());
-            saveCampaigns();
-            closeModal();
-            renderCalendar();
+        function toggleTask(campaignId, type, taskIndex) {
+            const key = getTaskKey(campaignId, type);
+            if (!taskCompletion[key]) taskCompletion[key] = {};
+            taskCompletion[key][taskIndex] = !taskCompletion[key][taskIndex];
+            localStorage.setItem('newpharma_tasks', JSON.stringify(taskCompletion));
             renderCampaigns();
+            renderAnalysis();
+        }
+
+        function calculateProgress(campaign) {
+            let total = 0, completed = 0;
+            (campaign.email || []).forEach((_, i) => {
+                total++;
+                if (taskCompletion[getTaskKey(campaign.id, 'email')]?.[i]) completed++;
+            });
+            (campaign.social || []).forEach((_, i) => {
+                total++;
+                if (taskCompletion[getTaskKey(campaign.id, 'social')]?.[i]) completed++;
+            });
+            (campaign.ecommerce || []).forEach((_, i) => {
+                total++;
+                if (taskCompletion[getTaskKey(campaign.id, 'ecommerce')]?.[i]) completed++;
+            });
+            
+            return { completed, total, percent: total > 0 ? Math.round(completed * 100 / total) : 0 };
         }
 
         function renderCampaigns() {
@@ -470,33 +405,100 @@
             const monthCampaigns = campaigns[currentArea][key] || [];
             
             if (monthCampaigns.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">Haz clic en un día para crear campaña</div>';
+                container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">📅 No hay campañas registradas este mes.</div>';
                 return;
             }
             
-            container.innerHTML = monthCampaigns.map(c => `
-                <div class="campaign-card" style="border-left-color: ${c.color};">
-                    <div class="campaign-title">${c.name}</div>
-                    <div style="font-size: 12px; color: #999; margin-bottom: 10px;">📅 ${c.dates}</div>
-                    <div style="margin-bottom: 12px;">${c.products.map(p => `<span class="product-tag">${p}</span>`).join('')}</div>
-                    
-                    <div style="margin: 15px 0; padding: 10px; background: #f5f5f5; border-radius: 6px;">
-                        <div style="font-size: 12px; font-weight: 600; color: #333; margin-bottom: 8px;">Tareas:</div>
-                        <div style="font-size: 11px; color: #666;">📧 ${c.email.length} | 📱 ${c.social.length} | 🛒 ${c.ecommerce.length}</div>
-                    </div>
+            container.innerHTML = monthCampaigns.map(c => {
+                const progress = calculateProgress(c);
+                return `
+                    <div class="campaign-card" style="border-left-color: ${c.color};">
+                        <div class="campaign-header">
+                            <div>
+                                <div class="campaign-title">${c.name}</div>
+                                <div class="campaign-dates">📅 ${c.dates}</div>
+                            </div>
+                            <span class="status-badge status-${c.status}">${c.status === 'planned' ? 'Planificado' : 'Activo'}</span>
+                        </div>
 
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-danger" style="flex: 1;" onclick="deleteCampaign('${c.id}')">🗑️ Eliminar</button>
+                        <div class="campaign-stats">
+                            <div class="stat">
+                                <div class="stat-value">${c.products.length}</div>
+                                <div class="stat-label">Productos</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${progress.percent}%</div>
+                                <div class="stat-label">Avance</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 12px;">${c.products.map(p => `<span class="product-tag">${p}</span>`).join('')}</div>
+
+                        <div style="margin: 15px 0; padding: 10px; background: #f5f5f5; border-radius: 6px;">
+                            <div style="font-size: 12px; font-weight: 600; color: #333; margin-bottom: 8px;">Tareas Completadas: ${progress.completed}/${progress.total}</div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: ${progress.percent}%"></div></div>
+                        </div>
+
+                        <div style="margin: 15px 0; border-top: 1px solid #eee; padding-top: 15px;">
+                            <div style="font-size: 13px; font-weight: 600; color: #333; margin-bottom: 10px;">📧 EMAIL</div>
+                            ${(c.email || []).map((task, i) => `
+                                <div class="task-item">
+                                    <input type="checkbox" ${taskCompletion[getTaskKey(c.id, 'email')]?.[i] ? 'checked' : ''} onchange="toggleTask(${c.id}, 'email', ${i})">
+                                    <span>${task}</span>
+                                </div>
+                            `).join('')}
+
+                            <div style="font-size: 13px; font-weight: 600; color: #FF6B6B; margin: 15px 0 8px 0;">📱 RRSS</div>
+                            ${(c.social || []).map((task, i) => `
+                                <div class="task-item">
+                                    <input type="checkbox" ${taskCompletion[getTaskKey(c.id, 'social')]?.[i] ? 'checked' : ''} onchange="toggleTask(${c.id}, 'social', ${i})">
+                                    <span>${task}</span>
+                                </div>
+                            `).join('')}
+
+                            <div style="font-size: 13px; font-weight: 600; color: #4ECDC4; margin: 15px 0 8px 0;">🛒 E-COMMERCE</div>
+                            ${(c.ecommerce || []).map((task, i) => `
+                                <div class="task-item">
+                                    <input type="checkbox" ${taskCompletion[getTaskKey(c.id, 'ecommerce')]?.[i] ? 'checked' : ''} onchange="toggleTask(${c.id}, 'ecommerce', ${i})">
+                                    <span>${task}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div style="margin: 15px 0; border-top: 1px solid #eee; padding-top: 15px;">
+                            <div style="font-size: 13px; font-weight: 600; color: #333; margin-bottom: 10px;">Precios y Descuentos</div>
+                            <table class="price-table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Full</th>
+                                        <th>Desc%</th>
+                                        <th>Final</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${(c.prices || c.products.map(p => ({product: p, fullPrice: PRODUCTS.find(x => x.name === p)?.price || 0, discount: 0}))).map(p => {
+                                        const final = Math.round(p.fullPrice * (1 - p.discount / 100));
+                                        return `<tr><td style="font-size: 11px;">${p.product}</td><td>$${p.fullPrice.toLocaleString()}</td><td>${p.discount}%</td><td>$${final.toLocaleString()}</td></tr>`;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card-footer">
+                            <button class="btn-pdf" onclick="exportCampaignPDF('${c.id}')">📥 PDF</button>
+                            <button class="btn-danger" onclick="deleteCampaign('${c.id}')">🗑️</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function deleteCampaign(id) {
-            if (confirm('¿Eliminar campaña?')) {
+            if (confirm('¿Eliminar esta campaña?')) {
                 const key = getCampaignKey();
                 campaigns[currentArea][key] = campaigns[currentArea][key].filter(c => c.id != id);
-                saveCampaigns();
+                localStorage.setItem('newpharma_campaigns', JSON.stringify(campaigns));
                 renderCalendar();
                 renderCampaigns();
             }
@@ -513,20 +515,21 @@
             localStorage.setItem('newpharma_sales', JSON.stringify(sales));
             renderSalesTable();
             document.getElementById('saleQuantity').value = '';
+            document.getElementById('saleProduct').value = '';
         }
 
         function renderSalesTable() {
             const tbody = document.getElementById('salesTableBody');
             const monthSales = sales.filter(s => s.month === currentMonthIndex && s.year === currentYear && s.area === currentArea);
             
-            tbody.innerHTML = monthSales.map((s, idx) => `
+            tbody.innerHTML = monthSales.map(s => `
                 <tr>
                     <td>${new Date(s.date).toLocaleDateString('es-CL')}</td>
                     <td>${s.product}</td>
                     <td>${s.quantity}</td>
                     <td>$${s.revenue.toLocaleString()}</td>
                 </tr>
-            `).join('');
+            `).join('') || '<tr><td colspan="4" style="text-align: center; color: #999;">Sin ventas</td></tr>';
         }
 
         function renderAnalysis() {
@@ -538,29 +541,51 @@
             let ecommerceTotal = 0, ecommerceCompleted = 0;
             
             monthCampaigns.forEach(c => {
-                emailTotal += c.email.length;
-                rrssTotal += c.social.length;
-                ecommerceTotal += c.ecommerce.length;
+                (c.email || []).forEach((_, i) => {
+                    emailTotal++;
+                    if (taskCompletion[getTaskKey(c.id, 'email')]?.[i]) emailCompleted++;
+                });
+                (c.social || []).forEach((_, i) => {
+                    rrssTotal++;
+                    if (taskCompletion[getTaskKey(c.id, 'social')]?.[i]) rrssCompleted++;
+                });
+                (c.ecommerce || []).forEach((_, i) => {
+                    ecommerceTotal++;
+                    if (taskCompletion[getTaskKey(c.id, 'ecommerce')]?.[i]) ecommerceCompleted++;
+                });
             });
             
             const totalTasks = emailTotal + rrssTotal + ecommerceTotal;
-            const emailPercent = emailTotal > 0 ? Math.round(0) : 0;
-            const rrssPercent = rrssTotal > 0 ? Math.round(0) : 0;
-            const ecommercePercent = ecommerceTotal > 0 ? Math.round(0) : 0;
-            const generalPercent = totalTasks > 0 ? 0 : 0;
+            const completedTasks = emailCompleted + rrssCompleted + ecommerceCompleted;
+            const generalPercent = totalTasks > 0 ? Math.round(completedTasks * 100 / totalTasks) : 0;
+            
+            const emailPercent = emailTotal > 0 ? Math.round(emailCompleted * 100 / emailTotal) : 0;
+            const rrssPercent = rrssTotal > 0 ? Math.round(rrssCompleted * 100 / rrssTotal) : 0;
+            const ecommercePercent = ecommerceTotal > 0 ? Math.round(ecommerceCompleted * 100 / ecommerceTotal) : 0;
             
             document.getElementById('emailPercent').textContent = emailPercent + '%';
             document.getElementById('emailFill').style.width = emailPercent + '%';
+            document.getElementById('emailText').textContent = `${emailCompleted} de ${emailTotal}`;
+            
             document.getElementById('rrssPercent').textContent = rrssPercent + '%';
             document.getElementById('rrssFill').style.width = rrssPercent + '%';
+            document.getElementById('rrssText').textContent = `${rrssCompleted} de ${rrssTotal}`;
+            
             document.getElementById('ecommercePercent').textContent = ecommercePercent + '%';
             document.getElementById('ecommerceFill').style.width = ecommercePercent + '%';
+            document.getElementById('ecommerceText').textContent = `${ecommerceCompleted} de ${ecommerceTotal}`;
+            
             document.getElementById('generalPercent').textContent = generalPercent + '%';
             document.getElementById('generalFill').style.width = generalPercent + '%';
+            document.getElementById('generalText').textContent = `${completedTasks} de ${totalTasks}`;
+        }
+
+        function exportCampaignPDF(campaignId) {
+            alert('PDF en desarrollo');
         }
 
         function exportFullPDF() {
-            alert('Función de PDF en desarrollo');
+            alert('PDF en desarrollo');
         }
 
         window.addEventListener('load', function() {
