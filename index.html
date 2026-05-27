@@ -35,12 +35,19 @@
         .calendar-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
         .day-header { font-weight: 600; text-align: center; color: #6B8E23; padding: 12px; font-size: 12px; background: #f5f5f5; border-radius: 4px; }
-        .calendar-day { border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; cursor: pointer; min-height: 80px; font-size: 12px; }
+        .calendar-day { border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; cursor: pointer; min-height: 80px; font-size: 12px; background: white; }
+        .calendar-day:hover { background: #f9f9f9; }
+        .calendar-day.empty { background: #f5f5f5; cursor: default; border: none; }
         .day-number { font-weight: 700; color: #333; font-size: 14px; }
         .campaigns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
         .campaign-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 5px solid; }
         .campaign-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
         .product-tag { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 12px; font-size: 11px; margin-right: 4px; }
+        .progress-bar { width: 100%; height: 6px; background: #e0e0e0; border-radius: 3px; margin: 5px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #6B8E23, #9ACD32); transition: width 0.3s; }
+        .progress-text { font-size: 11px; color: #666; margin-top: 3px; }
+        .task-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; }
+        .task-item input[type="checkbox"] { cursor: pointer; accent-color: #6B8E23; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #333; font-size: 13px; }
         .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Inter', sans-serif; }
@@ -48,6 +55,10 @@
         .sales-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 20px; }
         .sales-table th { background: #f5f5f5; padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
         .sales-table td { padding: 12px; border-bottom: 1px solid #eee; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 5px solid #6B8E23; }
+        .stat-card h3 { font-size: 14px; color: #666; margin-bottom: 10px; }
+        .stat-value { font-size: 32px; font-weight: 700; color: #6B8E23; margin-bottom: 10px; }
         .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #6B8E23 0%, #9ACD32 100%); }
         .login-box { background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; }
         .login-box input { width: 100%; margin-bottom: 15px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; }
@@ -79,11 +90,27 @@
 
             <div class="controls">
                 <div class="control-group">
+                    <label>Año:</label>
+                    <select id="yearSelect" onchange="loadMonth()">
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                    </select>
+                </div>
+                <div class="control-group">
                     <label>Mes:</label>
                     <select id="monthSelect" onchange="loadMonth()">
-                        <option value="8" selected>Septiembre 2026</option>
-                        <option value="7">Agosto 2026</option>
-                        <option value="0">Enero 2026</option>
+                        <option value="0">Enero</option>
+                        <option value="1">Febrero</option>
+                        <option value="2">Marzo</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Mayo</option>
+                        <option value="5">Junio</option>
+                        <option value="6">Julio</option>
+                        <option value="7">Agosto</option>
+                        <option value="8" selected>Septiembre</option>
+                        <option value="9">Octubre</option>
+                        <option value="10">Noviembre</option>
+                        <option value="11">Diciembre</option>
                     </select>
                 </div>
                 <div class="control-group">
@@ -106,7 +133,7 @@
                 <div class="tabs-content">
                     <div id="campanas" class="tab-pane active">
                         <div class="calendar-section">
-                            <div class="calendar-title">Calendario</div>
+                            <div class="calendar-title" id="calendarTitle">Calendario</div>
                             <div class="calendar-grid" id="calendarGrid"></div>
                         </div>
                         <h3 style="margin-top: 40px; margin-bottom: 20px;">Campañas</h3>
@@ -148,31 +175,31 @@
                     </div>
 
                     <div id="analisis" class="tab-pane">
-                        <h3 style="margin-bottom: 20px;">Resumen por Campaña</h3>
-                        <table class="sales-table">
-                            <thead>
-                                <tr>
-                                    <th>Campaña</th>
-                                    <th>Unidades</th>
-                                    <th>Ingresos</th>
-                                    <th>% Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="campaignAnalysisTable"></tbody>
-                        </table>
-                        <h3 style="margin-top: 40px; margin-bottom: 20px;">Estadísticas</h3>
-                        <div class="campaigns-grid">
-                            <div class="campaign-card">
-                                <div style="text-align: center;">
-                                    <div style="font-size: 24px; font-weight: 700; color: #6B8E23;" id="totalSales">0</div>
-                                    <div style="font-size: 12px; color: #999; margin-top: 5px;">Unidades</div>
-                                </div>
+                        <h3 style="margin-bottom: 30px;">% Cumplimiento del Mes</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>📧 EMAIL</h3>
+                                <div class="stat-value" id="emailPercent">0%</div>
+                                <div class="progress-bar"><div class="progress-fill" id="emailFill" style="width: 0%"></div></div>
+                                <div class="progress-text" id="emailText">0 de 0 completadas</div>
                             </div>
-                            <div class="campaign-card">
-                                <div style="text-align: center;">
-                                    <div style="font-size: 24px; font-weight: 700; color: #6B8E23;" id="totalRevenue">$0</div>
-                                    <div style="font-size: 12px; color: #999; margin-top: 5px;">Ingresos</div>
-                                </div>
+                            <div class="stat-card">
+                                <h3>📱 RRSS</h3>
+                                <div class="stat-value" id="rrssPercent">0%</div>
+                                <div class="progress-bar"><div class="progress-fill" id="rrssFill" style="width: 0%"></div></div>
+                                <div class="progress-text" id="rrssText">0 de 0 completadas</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>🛒 E-COMMERCE</h3>
+                                <div class="stat-value" id="ecommercePercent">0%</div>
+                                <div class="progress-bar"><div class="progress-fill" id="ecommerceFill" style="width: 0%"></div></div>
+                                <div class="progress-text" id="ecommerceText">0 de 0 completadas</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #FF6B6B;">
+                                <h3>📊 GENERAL</h3>
+                                <div class="stat-value" id="generalPercent" style="color: #FF6B6B;">0%</div>
+                                <div class="progress-bar"><div class="progress-fill" id="generalFill" style="width: 0%; background: linear-gradient(90deg, #FF6B6B, #FFB3B3);"></div></div>
+                                <div class="progress-text" id="generalText">0 de 0 completadas</div>
                             </div>
                         </div>
                     </div>
@@ -201,20 +228,50 @@
         const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
         const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
+        let currentYear = 2026;
         let currentMonthIndex = 8;
         let currentArea = 'b2c';
         let campaigns = {};
         let sales = [];
+        let taskCompletion = {};
 
         function initData() {
             campaigns = JSON.parse(localStorage.getItem('newpharma_campaigns') || '{"b2c":{}, "b2b":{}}');
             sales = JSON.parse(localStorage.getItem('newpharma_sales') || '[]');
+            taskCompletion = JSON.parse(localStorage.getItem('newpharma_tasks') || '{}');
             
-            for (let i = 0; i < 12; i++) {
-                if (!campaigns.b2c) campaigns.b2c = {};
-                if (!campaigns.b2b) campaigns.b2b = {};
-                if (!campaigns.b2c[i]) campaigns.b2c[i] = [];
-                if (!campaigns.b2b[i]) campaigns.b2b[i] = [];
+            if (!campaigns.b2c) campaigns.b2c = {};
+            if (!campaigns.b2b) campaigns.b2b = {};
+            
+            for (let year = 2026; year <= 2027; year++) {
+                for (let i = 0; i < 12; i++) {
+                    const key = `${year}_${i}`;
+                    if (!campaigns.b2c[key]) campaigns.b2c[key] = [];
+                    if (!campaigns.b2b[key]) campaigns.b2b[key] = [];
+                }
+            }
+            
+            // Agregar campaña de ejemplo en Agosto 2026
+            if (campaigns.b2c['2026_7'].length === 0) {
+                campaigns.b2c['2026_7'].push({
+                    id: 1,
+                    name: "Hongos Funcionales",
+                    dates: "1-7 de agosto",
+                    dayStart: 1,
+                    dayEnd: 7,
+                    status: "planned",
+                    progress: 15,
+                    color: '#6B8E23',
+                    products: ["Reishi 3:1 Sublingual", "Cordyceps 3:1 Sublingual"],
+                    prices: [
+                        {product: "Reishi 3:1 Sublingual", fullPrice: 13500, discount: 25},
+                        {product: "Cordyceps 3:1 Sublingual", fullPrice: 13500, discount: 40}
+                    ],
+                    email: ["Lunes: Intro a hongos + Quiz"],
+                    social: ["Instagram: Reels educativos"],
+                    ecommerce: ["Colección destacada"]
+                });
+                saveCampaigns();
             }
             
             const select = document.getElementById('saleProduct');
@@ -222,6 +279,10 @@
                 PRODUCTS.map(p => `<option value="${p.name}">$${p.price} - ${p.name}</option>`).join('');
             
             document.getElementById('saleDate').valueAsDate = new Date();
+        }
+
+        function saveCampaigns() {
+            localStorage.setItem('newpharma_campaigns', JSON.stringify(campaigns));
         }
 
         function login() {
@@ -247,55 +308,137 @@
             document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
             e.target.classList.add('active');
+            
+            if (tabName === 'analisis') renderAnalysis();
         }
 
         function loadMonth() {
+            currentYear = parseInt(document.getElementById('yearSelect').value);
             currentMonthIndex = parseInt(document.getElementById('monthSelect').value);
             currentArea = document.getElementById('areaSelect').value;
+            
+            document.getElementById('calendarTitle').textContent = `Calendario - ${MONTH_NAMES[currentMonthIndex]} ${currentYear}`;
             renderCalendar();
             renderCampaigns();
         }
 
+        function getCampaignKey() {
+            return `${currentYear}_${currentMonthIndex}`;
+        }
+
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
+            const key = getCampaignKey();
             const daysInMonth = DAYS_IN_MONTH[currentMonthIndex];
-            const firstDay = new Date(2026, currentMonthIndex, 1).getDay() - 1;
-            const monthCampaigns = campaigns[currentArea][currentMonthIndex] || [];
+            const firstDay = new Date(currentYear, currentMonthIndex, 1).getDay() - 1;
+            const monthCampaigns = campaigns[currentArea][key] || [];
             
             let html = '';
             ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].forEach(day => {
                 html += `<div class="day-header">${day}</div>`;
             });
             
-            for (let i = 0; i < Math.max(0, firstDay); i++) html += '<div class="calendar-day" style="background: white; border: none;"></div>';
+            for (let i = 0; i < Math.max(0, firstDay); i++) {
+                html += '<div class="calendar-day empty"></div>';
+            }
             
             for (let day = 1; day <= daysInMonth; day++) {
                 const campaign = monthCampaigns.find(c => day >= c.dayStart && day <= c.dayEnd);
                 if (campaign) {
-                    html += `<div class="calendar-day" style="border-color: ${campaign.color}; background-color: ${campaign.color}20;"><div class="day-number">${day}</div><div style="font-size: 10px; color: ${campaign.color};">${campaign.name}</div></div>`;
+                    html += `<div class="calendar-day" style="border: 2px solid ${campaign.color}; background-color: ${campaign.color}20;">
+                        <div class="day-number">${day}</div>
+                        <div style="font-size: 10px; color: ${campaign.color}; margin-top: 4px;">${campaign.name}</div>
+                    </div>`;
                 } else {
                     html += `<div class="calendar-day"><div class="day-number">${day}</div></div>`;
                 }
             }
+            
             grid.innerHTML = html;
+        }
+
+        function getTaskKey(campaignId, type) {
+            return `${currentYear}_${currentMonthIndex}_${campaignId}_${type}`;
+        }
+
+        function toggleTask(campaignId, type, taskIndex) {
+            const key = getTaskKey(campaignId, type);
+            if (!taskCompletion[key]) taskCompletion[key] = {};
+            taskCompletion[key][taskIndex] = !taskCompletion[key][taskIndex];
+            localStorage.setItem('newpharma_tasks', JSON.stringify(taskCompletion));
+            renderCampaigns();
+        }
+
+        function calculateProgress(campaign) {
+            let total = 0, completed = 0;
+            
+            (campaign.email || []).forEach((_, i) => {
+                total++;
+                if (taskCompletion[getTaskKey(campaign.id, 'email')]?.[i]) completed++;
+            });
+            (campaign.social || []).forEach((_, i) => {
+                total++;
+                if (taskCompletion[getTaskKey(campaign.id, 'social')]?.[i]) completed++;
+            });
+            (campaign.ecommerce || []).forEach((_, i) => {
+                total++;
+                if (taskCompletion[getTaskKey(campaign.id, 'ecommerce')]?.[i]) completed++;
+            });
+            
+            return { completed, total, percent: total > 0 ? Math.round(completed * 100 / total) : 0 };
         }
 
         function renderCampaigns() {
             const container = document.getElementById('campaignsContainer');
-            const monthCampaigns = campaigns[currentArea][currentMonthIndex] || [];
+            const key = getCampaignKey();
+            const monthCampaigns = campaigns[currentArea][key] || [];
             
             if (monthCampaigns.length === 0) {
                 container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">No hay campañas</div>';
                 return;
             }
             
-            container.innerHTML = monthCampaigns.map(c => `
-                <div class="campaign-card" style="border-left-color: ${c.color};">
-                    <div class="campaign-title">${c.name}</div>
-                    <div style="font-size: 12px; color: #999; margin-bottom: 10px;">📅 ${c.dates}</div>
-                    <div>${c.products.map(p => `<span class="product-tag">${p}</span>`).join('')}</div>
-                </div>
-            `).join('');
+            container.innerHTML = monthCampaigns.map(c => {
+                const progress = calculateProgress(c);
+                return `
+                    <div class="campaign-card" style="border-left-color: ${c.color};">
+                        <div class="campaign-title">${c.name}</div>
+                        <div style="font-size: 12px; color: #999; margin-bottom: 10px;">📅 ${c.dates}</div>
+                        <div style="margin-bottom: 12px;">${c.products.map(p => `<span class="product-tag">${p}</span>`).join('')}</div>
+                        
+                        <div style="margin: 15px 0; padding: 10px; background: #f5f5f5; border-radius: 6px;">
+                            <div style="font-size: 13px; font-weight: 600; color: #333; margin-bottom: 8px;">Progreso: ${progress.percent}% (${progress.completed}/${progress.total})</div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: ${progress.percent}%"></div></div>
+                        </div>
+
+                        <div style="margin-top: 15px;">
+                            <div style="font-size: 12px; font-weight: 600; color: #6B8E23; margin-bottom: 8px;">📧 EMAIL</div>
+                            ${(c.email || []).map((task, i) => `
+                                <div class="task-item" style="${taskCompletion[getTaskKey(c.id, 'email')]?.[i] ? 'opacity: 0.6;' : ''}">
+                                    <input type="checkbox" ${taskCompletion[getTaskKey(c.id, 'email')]?.[i] ? 'checked' : ''} onchange="toggleTask(${c.id}, 'email', ${i})">
+                                    <span>${task}</span>
+                                </div>
+                            `).join('')}
+                            
+                            <div style="font-size: 12px; font-weight: 600; color: #FF6B6B; margin: 12px 0 8px 0;">📱 RRSS</div>
+                            ${(c.social || []).map((task, i) => `
+                                <div class="task-item" style="${taskCompletion[getTaskKey(c.id, 'social')]?.[i] ? 'opacity: 0.6;' : ''}">
+                                    <input type="checkbox" ${taskCompletion[getTaskKey(c.id, 'social')]?.[i] ? 'checked' : ''} onchange="toggleTask(${c.id}, 'social', ${i})">
+                                    <span>${task}</span>
+                                </div>
+                            `).join('')}
+                            
+                            <div style="font-size: 12px; font-weight: 600; color: #4ECDC4; margin: 12px 0 8px 0;">🛒 E-COMMERCE</div>
+                            ${(c.ecommerce || []).map((task, i) => `
+                                <div class="task-item" style="${taskCompletion[getTaskKey(c.id, 'ecommerce')]?.[i] ? 'opacity: 0.6;' : ''}">
+                                    <input type="checkbox" ${taskCompletion[getTaskKey(c.id, 'ecommerce')]?.[i] ? 'checked' : ''} onchange="toggleTask(${c.id}, 'ecommerce', ${i})">
+                                    <span>${task}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function addSale() {
@@ -305,110 +448,110 @@
             if (!product || !quantity || !date) return;
             
             const productData = PRODUCTS.find(p => p.name === product);
-            sales.push({date, product, quantity, price: productData.price, revenue: quantity * productData.price, month: currentMonthIndex, area: currentArea});
+            const dateObj = new Date(date);
+            sales.push({
+                date, product, quantity, price: productData.price, 
+                revenue: quantity * productData.price, 
+                month: currentMonthIndex, 
+                year: currentYear,
+                area: currentArea
+            });
             localStorage.setItem('newpharma_sales', JSON.stringify(sales));
             renderSalesTable();
             document.getElementById('saleQuantity').value = '';
+            document.getElementById('saleProduct').value = '';
         }
 
         function renderSalesTable() {
             const tbody = document.getElementById('salesTableBody');
-            const monthSales = sales.filter(s => s.month === currentMonthIndex && s.area === currentArea);
+            const monthSales = sales.filter(s => s.month === currentMonthIndex && s.year === currentYear && s.area === currentArea);
             
             tbody.innerHTML = monthSales.map(s => {
                 const dateObj = new Date(s.date);
                 const day = dateObj.getDate();
-                const campaign = campaigns[currentArea][currentMonthIndex].find(c => day >= c.dayStart && day <= c.dayEnd);
+                const key = getCampaignKey();
+                const campaign = campaigns[currentArea][key].find(c => day >= c.dayStart && day <= c.dayEnd);
                 return `<tr><td>${new Date(s.date).toLocaleDateString('es-CL')}</td><td>${s.product}</td><td>${s.quantity}</td><td>$${s.revenue.toLocaleString()}</td><td>${campaign ? campaign.name : '-'}</td></tr>`;
             }).join('');
         }
 
+        function renderAnalysis() {
+            const key = getCampaignKey();
+            const monthCampaigns = campaigns[currentArea][key] || [];
+            
+            let emailTotal = 0, emailCompleted = 0;
+            let rrssTotal = 0, rrssCompleted = 0;
+            let ecommerceTotal = 0, ecommerceCompleted = 0;
+            
+            monthCampaigns.forEach(c => {
+                (c.email || []).forEach((_, i) => {
+                    emailTotal++;
+                    if (taskCompletion[getTaskKey(c.id, 'email')]?.[i]) emailCompleted++;
+                });
+                (c.social || []).forEach((_, i) => {
+                    rrssTotal++;
+                    if (taskCompletion[getTaskKey(c.id, 'social')]?.[i]) rrssCompleted++;
+                });
+                (c.ecommerce || []).forEach((_, i) => {
+                    ecommerceTotal++;
+                    if (taskCompletion[getTaskKey(c.id, 'ecommerce')]?.[i]) ecommerceCompleted++;
+                });
+            });
+            
+            const totalTasks = emailTotal + rrssTotal + ecommerceTotal;
+            const completedTasks = emailCompleted + rrssCompleted + ecommerceCompleted;
+            const generalPercent = totalTasks > 0 ? Math.round(completedTasks * 100 / totalTasks) : 0;
+            
+            const emailPercent = emailTotal > 0 ? Math.round(emailCompleted * 100 / emailTotal) : 0;
+            const rrssPercent = rrssTotal > 0 ? Math.round(rrssCompleted * 100 / rrssTotal) : 0;
+            const ecommercePercent = ecommerceTotal > 0 ? Math.round(ecommerceCompleted * 100 / ecommerceTotal) : 0;
+            
+            document.getElementById('emailPercent').textContent = emailPercent + '%';
+            document.getElementById('emailFill').style.width = emailPercent + '%';
+            document.getElementById('emailText').textContent = `${emailCompleted} de ${emailTotal} completadas`;
+            
+            document.getElementById('rrssPercent').textContent = rrssPercent + '%';
+            document.getElementById('rrssFill').style.width = rrssPercent + '%';
+            document.getElementById('rrssText').textContent = `${rrssCompleted} de ${rrssTotal} completadas`;
+            
+            document.getElementById('ecommercePercent').textContent = ecommercePercent + '%';
+            document.getElementById('ecommerceFill').style.width = ecommercePercent + '%';
+            document.getElementById('ecommerceText').textContent = `${ecommerceCompleted} de ${ecommerceTotal} completadas`;
+            
+            document.getElementById('generalPercent').textContent = generalPercent + '%';
+            document.getElementById('generalFill').style.width = generalPercent + '%';
+            document.getElementById('generalText').textContent = `${completedTasks} de ${totalTasks} completadas`;
+        }
+
         function exportFullPDF() {
-            const monthCampaigns = campaigns[currentArea][currentMonthIndex] || [];
+            const key = getCampaignKey();
+            const monthCampaigns = campaigns[currentArea][key] || [];
             
             let htmlContent = `<div style="font-family: Arial, sans-serif;">
                 <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #6B8E23; padding-bottom: 20px;">
                     <h1 style="color: #6B8E23; margin: 0;">🌿 PLANIFICACIÓN NEWPHARMA</h1>
-                    <h2 style="color: #333; margin: 10px 0;">${MONTH_NAMES[currentMonthIndex]} 2026</h2>
+                    <h2 style="color: #333; margin: 10px 0;">${MONTH_NAMES[currentMonthIndex]} ${currentYear}</h2>
                     <p style="color: #999; margin: 0;">Área: ${currentArea === 'b2c' ? 'B2C (Consumidor)' : 'B2B (Mayorista)'}</p>
                     <p style="color: #999; margin: 5px 0;">Fecha: ${new Date().toLocaleDateString('es-CL')}</p>
-                </div>
-                <div style="margin-bottom: 40px;">
-                    <h2 style="color: #6B8E23; margin-bottom: 15px; font-size: 18px;">CALENDARIO</h2>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                        <tr>
-                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">L</td>
-                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">M</td>
-                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">M</td>
-                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">J</td>
-                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">V</td>
-                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">S</td>
-                            <td style="text-align: center; padding: 8px; background: #6B8E23; color: white; font-weight: bold; border: 1px solid #ddd;">D</td>
-                        </tr>`;
-            
-            const daysInMonth = DAYS_IN_MONTH[currentMonthIndex];
-            const firstDay = new Date(2026, currentMonthIndex, 1).getDay() - 1;
-            let cellCount = 0;
-            
-            htmlContent += '<tr>';
-            for (let i = 0; i < Math.max(0, firstDay); i++) {
-                htmlContent += '<td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"></td>';
-                cellCount++;
-            }
-            
-            for (let day = 1; day <= daysInMonth; day++) {
-                const campaign = monthCampaigns.find(c => day >= c.dayStart && day <= c.dayEnd);
-                const bgColor = campaign ? `${campaign.color}20` : '#fff';
-                const borderColor = campaign ? campaign.color : '#ddd';
-                
-                htmlContent += `<td style="padding: 8px; border: 2px solid ${borderColor}; background: ${bgColor}; text-align: center; height: 50px; vertical-align: top;"><strong>${day}</strong>${campaign ? `<br/><span style="font-size: 8px; color: ${campaign.color};">${campaign.name}</span>` : ''}</td>`;
-                
-                cellCount++;
-                if (cellCount % 7 === 0) htmlContent += '</tr><tr>';
-            }
-            
-            const remaining = 7 - (cellCount % 7);
-            if (remaining < 7) {
-                for (let i = 0; i < remaining; i++) {
-                    htmlContent += '<td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"></td>';
-                }
-            }
-            htmlContent += '</tr></table></div>';
-
-            htmlContent += `<div style="page-break-before: always;"><h2 style="color: #6B8E23; margin-bottom: 20px; font-size: 18px;">CAMPAÑAS DEL MES</h2>`;
-            
-            monthCampaigns.forEach((campaign, idx) => {
-                htmlContent += `<div style="margin-bottom: 30px; border-left: 5px solid ${campaign.color}; padding-left: 15px; page-break-inside: avoid;">
-                    <h3 style="color: #333; margin: 0 0 5px 0; font-size: 16px;">${idx + 1}. ${campaign.name}</h3>
-                    <p style="color: #999; margin: 0 0 15px 0; font-size: 12px;">📅 ${campaign.dates}</p>
-                    
-                    <h4 style="color: #6B8E23; margin: 0 0 10px 0; font-size: 12px;">PRODUCTOS Y PRECIOS</h4>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                        <tr style="background: #f5f5f5;">
-                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Producto</th>
-                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Precio Full</th>
-                            <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">Desc%</th>
-                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Precio Final</th>
-                        </tr>
-                        ${(campaign.prices || campaign.products.map(p => {const prod = PRODUCTS.find(x => x.name === p); return {product: p, fullPrice: prod?.price || 0, discount: 0};})).map(p => {const final = Math.round(p.fullPrice * (1 - p.discount / 100)); return `<tr><td style="padding: 8px; border: 1px solid #ddd;">${p.product}</td><td style="padding: 8px; border: 1px solid #ddd; text-align: right;">$${p.fullPrice.toLocaleString()}</td><td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${p.discount}%</td><td style="padding: 8px; border: 1px solid #ddd; text-align: right;">$${final.toLocaleString()}</td></tr>`;}).join('')}
-                    </table>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
-                        <div><h4 style="color: #6B8E23; margin: 0 0 8px 0; font-size: 11px;">📧 EMAIL</h4><ul style="margin: 0; padding-left: 18px; font-size: 10px;">${(campaign.email || []).map(task => `<li style="margin-bottom: 4px;">${task}</li>`).join('') || '<li style="color: #999;">Sin tareas</li>'}</ul></div>
-                        <div><h4 style="color: #6B8E23; margin: 0 0 8px 0; font-size: 11px;">📱 RRSS</h4><ul style="margin: 0; padding-left: 18px; font-size: 10px;">${(campaign.social || []).map(task => `<li style="margin-bottom: 4px;">${task}</li>`).join('') || '<li style="color: #999;">Sin tareas</li>'}</ul></div>
-                        <div><h4 style="color: #6B8E23; margin: 0 0 8px 0; font-size: 11px;">🛒 E-COMMERCE</h4><ul style="margin: 0; padding-left: 18px; font-size: 10px;">${(campaign.ecommerce || []).map(task => `<li style="margin-bottom: 4px;">${task}</li>`).join('') || '<li style="color: #999;">Sin tareas</li>'}</ul></div>
-                    </div>
                 </div>`;
-            });
 
-            htmlContent += `</div><div style="margin-top: 40px; text-align: center; border-top: 2px solid #6B8E23; padding-top: 20px; color: #999; font-size: 11px;"><p>Planificación NewPharma v2.0</p></div></div>`;
+            htmlContent += monthCampaigns.map((c, idx) => {
+                const progress = calculateProgress(c);
+                return `<div style="margin-bottom: 30px; border-left: 5px solid ${c.color}; padding-left: 15px; page-break-inside: avoid;">
+                    <h3 style="color: #333; margin: 0 0 5px 0; font-size: 16px;">${idx + 1}. ${c.name}</h3>
+                    <p style="color: #999; margin: 0 0 10px 0; font-size: 12px;">📅 ${c.dates}</p>
+                    <p style="color: #666; margin: 0 0 15px 0; font-size: 12px;"><strong>Progreso: ${progress.percent}%</strong></p>
+                </div>`;
+            }).join('');
+
+            htmlContent += `<div style="text-align: center; color: #999; font-size: 11px; margin-top: 40px;">Planificación NewPharma v2.0</div></div>`;
 
             const element = document.createElement('div');
             element.innerHTML = htmlContent;
             
             const opt = {
                 margin: 10,
-                filename: `Planificacion_${MONTH_NAMES[currentMonthIndex]}_${currentArea.toUpperCase()}.pdf`,
+                filename: `Planificacion_${MONTH_NAMES[currentMonthIndex]}_${currentYear}_${currentArea.toUpperCase()}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
                 jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
