@@ -1,1 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewPharma Planificación</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 26px; color: #1a1a1a; }
+        button { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #6B8E23; color: white; }
+        .btn-primary:hover { background: #556b1a; }
+        .btn-secondary { background: #f0f0f0; color: #333; }
+        .btn-danger { background: #ffebee; color: #c62828; font-size: 12px; padding: 6px 12px; }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .control { display: flex; gap: 8px; align-items: center; }
+        .control label { font-weight: 500; font-size: 13px; }
+        select { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Inter'; }
+        .content { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 30px; }
+        .day-header { font-weight: 600; text-align: center; color: #6B8E23; padding: 10px; font-size: 12px; background: #f5f5f5; border-radius: 4px; }
+        .day { border: 1px solid #ddd; border-radius: 6px; padding: 8px; min-height: 70px; font-size: 11px; background: white; }
+        .day.empty { background: #f5f5f5; border: none; }
+        .day-num { font-weight: 700; color: #333; font-size: 13px; }
+        .day-camp { font-size: 9px; margin-top: 4px; font-weight: 600; }
+        .campaigns { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .campaign { background: #f9f9f9; border-radius: 10px; padding: 18px; border-left: 4px solid; }
+        .camp-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+        .camp-date { font-size: 11px; color: #999; margin-bottom: 10px; }
+        .products { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .product { background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 12px; font-size: 10px; }
+        .tasks { margin-top: 12px; border-top: 1px solid #ddd; padding-top: 10px; }
+        .task-group { margin-bottom: 8px; }
+        .task-title { font-size: 11px; font-weight: 600; color: #333; margin-bottom: 5px; }
+        .task-item { display: flex; gap: 6px; align-items: center; font-size: 11px; margin-bottom: 3px; }
+        .task-item input { cursor: pointer; }
+        .login { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .login.show { display: flex; }
+        .login-box { background: white; padding: 35px; border-radius: 12px; width: 100%; max-width: 350px; }
+        .login-box h2 { text-align: center; margin-bottom: 25px; font-size: 20px; }
+        .login-box input { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Inter'; }
+        .login-box button { width: 100%; }
+        .btn-add { width: 100%; margin-top: 20px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 2000; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-content h3 { margin-bottom: 15px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Inter'; font-size: 13px; }
+        .form-group textarea { min-height: 50px; resize: vertical; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px; }
+        .empty { text-align: center; color: #999; padding: 30px; }
+    </style>
+</head>
+<body>
+    <div id="loginScreen" class="login show">
+        <div class="login-box">
+            <h2>🌿 NewPharma</h2>
+            <input type="email" id="email" placeholder="Email" value="equipo@newpharma.cl">
+            <input type="password" id="password" placeholder="Contraseña" value="NewPharma2024">
+            <button class="btn-primary" onclick="login()" style="width: 100%;">Ingresar</button>
+        </div>
+    </div>
+
+    <div id="app" style="display: none;">
+        <div class="container">
+            <div class="header">
+                <h1>🌿 Planificación NewPharma</h1>
+                <button class="btn-secondary" onclick="logout()">Salir</button>
+            </div>
+
+            <div class="controls">
+                <div class="control">
+                    <label>Año:</label>
+                    <select id="year" onchange="load()">
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Mes:</label>
+                    <select id="month" onchange="load()">
+                        <option value="0">Enero</option>
+                        <option value="1">Febrero</option>
+                        <option value="2">Marzo</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Mayo</option>
+                        <option value="5">Junio</option>
+                        <option value="6">Julio</option>
+                        <option value="7">Agosto</option>
+                        <option value="8" selected>Septiembre</option>
+                        <option value="9">Octubre</option>
+                        <option value="10">Noviembre</option>
+                        <option value="11">Diciembre</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label>Área:</label>
+                    <select id="area" onchange="load()">
+                        <option value="b2c">B2C</option>
+                        <option value="b2b">B2B</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="content">
+                <h3 style="margin-bottom: 15px;">Calendario</h3>
+                <div class="calendar" id="calendar"></div>
+                <button class="btn-primary btn-add" onclick="openNewCampaign()">➕ Agregar Campaña</button>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px;">Campañas</h3>
+                <div class="campaigns" id="campaigns"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NUEVA CAMPAÑA -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3>Nueva Campaña</h3>
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="campName">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                    <label>Día Inicio</label>
+                    <input type="number" id="dayStart" min="1" max="31" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Día Fin</label>
+                    <input type="number" id="dayEnd" min="1" max="31" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <select id="color">
+                        <option value="#6B8E23">Verde</option>
+                        <option value="#FF6B6B">Rojo</option>
+                        <option value="#4ECDC4">Turquesa</option>
+                        <option value="#FFE66D">Amarillo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Productos (separados por coma)</label>
+                <input type="text" id="products" placeholder="Reishi 3:1, Cordyceps">
+            </div>
+            <div class="form-group">
+                <label>Tareas Email (una por línea)</label>
+                <textarea id="email_tasks"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Tareas RRSS (una por línea)</label>
+                <textarea id="social_tasks"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Tareas E-commerce (una por línea)</label>
+                <textarea id="ecom_tasks"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn-primary" onclick="saveCampaign()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+const firebaseConfig = {
+apiKey: "AIzaSyAbP3I8R8_iPxs1NOGFLw_umL0hWvBDOxM",
+authDomain: "newpharma-campaigns.firebaseapp.com",
+projectId: "newpharma-campaigns",
+storageBucket: "newpharma-campaigns.firebasestorage.app",
+messagingSenderId: "32317378834",
+appId: "1:32317378834:web:fc65d0cf39bcee3f6be3cb"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+console.log("Firebase OK");
+function ensureKeys() {
+for (let y = 2026; y <= 2027; y++) { for (let m = 0; m < 12; m++) { const k = y+'_'+m; if (!data.b2c[k]) data.b2c[k]=[]; if (!data.b2b[k]) data.b2b[k]=[]; } }
+}
+function saveToFirestore() {
+db.collection('data').doc('main').set({ data, nextId, updatedAt: new Date() }).then(()=>console.log("Guardado Firestore")).catch(e=>console.error(e));
+}
+function loadFromFirestore() {
+db.collection('data').doc('main').get().then(doc=>{ if(doc.exists){ const d=doc.data(); if(d.data) data=d.data; if(d.nextId) nextId=d.nextId; ensureKeys(); localStorage.setItem('data',JSON.stringify(data)); localStorage.setItem('nextId',nextId.toString()); console.log("Cargado Firestore"); load(); } }).catch(e=>console.error(e));
+}
+const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        let data = {b2c: {}, b2b: {}};
+        let nextId = 1;
+
+        function init() {
+            const saved = localStorage.getItem('data');
+            if (saved) data = JSON.parse(saved);
+            nextId = parseInt(localStorage.getItem('nextId') || '1');
+            
+            for (let y = 2026; y <= 2027; y++) {
+                for (let m = 0; m < 12; m++) {
+                    const key = `${y}_${m}`;
+                    if (!data.b2c[key]) data.b2c[key] = [];
+                    if (!data.b2b[key]) data.b2b[key] = [];
+                }
+            }
+
+            // Ejemplo
+            if (data.b2c['2026_7'].length === 0) {
+                data.b2c['2026_7'].push({
+                    id: 1,
+                    name: "Hongos",
+                    dates: "1-7",
+                    dayStart: 1,
+                    dayEnd: 7,
+                    color: '#6B8E23',
+                    products: ["Reishi", "Cordyceps"],
+                    email: ["Email 1"],
+                    social: ["RRSS 1"],
+                    ecom: ["Ecom 1"]
+                });
+            }
+        }
+
+        function login() {
+            if (document.getElementById('email').value && document.getElementById('password').value) {
+                localStorage.setItem('user', document.getElementById('email').value);
+                document.getElementById('loginScreen').classList.remove('show');
+                document.getElementById('app').style.display = 'block';
+                init();
+load();
+loadFromFirestore();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            document.getElementById('loginScreen').classList.add('show');
+            document.getElementById('app').style.display = 'none';
+        }
+
+        function load() {
+            renderCalendar();
+            renderCampaigns();
+        }
+
+        function renderCalendar() {
+            const year = parseInt(document.getElementById('year').value);
+            const month = parseInt(document.getElementById('month').value);
+            const area = document.getElementById('area').value;
+            const key = `${year}_${month}`;
+            const camps = data[area][key] || [];
+            const daysInMonth = DAYS[month];
+            const firstDay = new Date(year, month, 1).getDay() - 1;
+
+            let html = '';
+            ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].forEach(d => {
+                html += `<div class="day-header">${d}</div>`;
+            });
+
+            for (let i = 0; i < Math.max(0, firstDay); i++) {
+                html += '<div class="day empty"></div>';
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const camp = camps.find(c => day >= c.dayStart && day <= c.dayEnd);
+                if (camp) {
+                    html += `<div class="day" style="border: 2px solid ${camp.color}; background-color: ${camp.color}20;">
+                        <div class="day-num">${day}</div>
+                        <div class="day-camp" style="color: ${camp.color};">${camp.name}</div>
+                    </div>`;
+                } else {
+                    html += `<div class="day"><div class="day-num">${day}</div></div>`;
+                }
+            }
+
+            document.getElementById('calendar').innerHTML = html;
+        }
+
+        function renderCampaigns() {
+            const year = parseInt(document.getElementById('year').value);
+            const month = parseInt(document.getElementById('month').value);
+            const area = document.getElementById('area').value;
+            const key = `${year}_${month}`;
+            const camps = data[area][key] || [];
+
+            if (camps.length === 0) {
+                document.getElementById('campaigns').innerHTML = '<div class="empty">Haz clic en "Agregar Campaña" para crear una</div>';
+                return;
+            }
+
+            document.getElementById('campaigns').innerHTML = camps.map(c => `
+                <div class="campaign" style="border-left-color: ${c.color};">
+                    <div class="camp-title">${c.name}</div>
+                    <div class="camp-date">📅 ${c.dates}</div>
+                    <div class="products">
+                        ${c.products.map(p => `<span class="product">${p}</span>`).join('')}
+                    </div>
+                    <div class="tasks">
+                        <div class="task-group">
+                            <div class="task-title">📧 EMAIL</div>
+                            ${c.email.map((t, i) => `<div class="task-item"><input type="checkbox" id="email_${c.id}_${i}"><label for="email_${c.id}_${i}" style="margin: 0;">${t}</label></div>`).join('')}
+                        </div>
+                        <div class="task-group">
+                            <div class="task-title">📱 RRSS</div>
+                            ${c.social.map((t, i) => `<div class="task-item"><input type="checkbox" id="social_${c.id}_${i}"><label for="social_${c.id}_${i}" style="margin: 0;">${t}</label></div>`).join('')}
+                        </div>
+                        <div class="task-group">
+                            <div class="task-title">🛒 E-COMMERCE</div>
+                            ${c.ecom.map((t, i) => `<div class="task-item"><input type="checkbox" id="ecom_${c.id}_${i}"><label for="ecom_${c.id}_${i}" style="margin: 0;">${t}</label></div>`).join('')}
+                        </div>
+                    </div>
+                    <button class="btn-danger" onclick="deleteCampaign('${c.id}')" style="margin-top: 10px; width: 100%;">🗑️ Eliminar</button>
+                </div>
+            `).join('');
+        }
+
+        function openNewCampaign() {
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        function saveCampaign() {
+            const name = document.getElementById('campName').value;
+            const dayStart = parseInt(document.getElementById('dayStart').value);
+            const dayEnd = parseInt(document.getElementById('dayEnd').value);
+            const color = document.getElementById('color').value;
+            const products = document.getElementById('products').value.split(',').map(p => p.trim()).filter(p => p);
+            const email = document.getElementById('email_tasks').value.split('\n').map(e => e.trim()).filter(e => e);
+            const social = document.getElementById('social_tasks').value.split('\n').map(s => s.trim()).filter(s => s);
+            const ecom = document.getElementById('ecom_tasks').value.split('\n').map(e => e.trim()).filter(e => e);
+
+            if (!name || !dayStart || !dayEnd) {
+                alert('Completa nombre y días');
+                return;
+            }
+
+            const year = parseInt(document.getElementById('year').value);
+            const month = parseInt(document.getElementById('month').value);
+            const area = document.getElementById('area').value;
+            const key = `${year}_${month}`;
+
+            if (!data[area][key]) data[area][key] = [];
+
+            data[area][key].push({
+                id: nextId++,
+                name,
+                dates: `${dayStart}-${dayEnd}`,
+                dayStart,
+                dayEnd,
+                color,
+                products,
+                email,
+                social,
+                ecom
+            });
+
+            localStorage.setItem('data', JSON.stringify(data));
+            localStorage.setItem('nextId', nextId.toString());
+saveToFirestore();
+            closeModal();
+            load();
+        }
+
+        function deleteCampaign(id) {
+            if (confirm('¿Eliminar?')) {
+                const year = parseInt(document.getElementById('year').value);
+                const month = parseInt(document.getElementById('month').value);
+                const area = document.getElementById('area').value;
+                const key = `${year}_${month}`;
+                data[area][key] = data[area][key].filter(c => c.id != id);
+                localStorage.setItem('data', JSON.stringify(data));
+saveToFirestore();
+                load();
+            }
+        }
+
+        if (localStorage.getItem('user')) {
+            document.getElementById('loginScreen').classList.remove('show');
+            document.getElementById('app').style.display = 'block';
+            init();
+load();
+loadFromFirestore();
+        }
+    </script>
+</body>
+</html>
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><title>NewPharma</title><script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f7fa;padding:20px}.login{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0f67b1,#1e88e5);display:flex;justify-content:center;align-items:center;z-index:999}.login.hide{display:none}.login-box{background:white;padding:40px;border-radius:15px;max-width:400px;box-shadow:0 10px 40px rgba(0,0,0,.2)}.login-box h1{font-size:28px;color:#0f67b1;margin-bottom:20px}.app{max-width:1200px;margin:0 auto}.app.hide{display:none}.header{background:white;padding:20px;border-radius:10px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin:30px 0}.day{border:1px solid #e0e0e0;border-radius:8px;padding:10px;min-height:80px;background:white;text-align:center}.day.active{border:2px solid #0f67b1;background:#f0f7ff}.campaigns{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px;margin-top:30px}.campaign{background:#f9f9f9;border-left:4px solid #0f67b1;padding:15px;border-radius:8px}input,select,button{padding:10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;margin-bottom:10px}button{background:#0f67b1;color:white;border:none;cursor:pointer;width:100%}</style></head><body><div id="login" class="login"><div class="login-box"><h1>🌿 NewPharma</h1><input type="email" id="email" value="equipo@newpharma.cl"><input type="password" id="pass" value="NewPharma2024"><button onclick="login()">Ingresar</button></div></div><div id="app" class="app hide"><div class="header"><h1>🌿 NewPharma Campañas</h1><button onclick="logout()">Salir</button></div><select id="month" onchange="render()"><option value="8" selected>Septiembre</option><option value="5">Junio</option></select><div class="calendar" id="cal"></div><div class="campaigns" id="camps"></div></div><script>const firebaseConfig={apiKey:"AIzaSyAbP3I8R8_iPxs1NOGFLw_umL0hWvBDOxM",authDomain:"newpharma-campaigns.firebaseapp.com",projectId:"newpharma-campaigns",storageBucket:"newpharma-campaigns.firebasestorage.app",messagingSenderId:"32317378834",appId:"1:32317378834:web:fc65d0cf39bcee3f6be3cb"};firebase.initializeApp(firebaseConfig);const db=firebase.firestore();console.log("✅ Firebase OK");let data={b2c:{}};function login(){const email=document.getElementById("email").value;localStorage.setItem("user",email);document.getElementById("login").classList.add("hide");document.getElementById("app").classList.remove("hide");load()}function logout(){localStorage.removeItem("user");location.reload()}function load(){db.collection("data").doc("main").get().then(doc=>{data=doc.exists?doc.data().data||data:data;render()}).catch(err=>{console.error(err);render()})}function render(){const month=parseInt(document.getElementById("month").value);const key=`2026_${month}_b2c`;const camps=data.b2c[key]||[];let cal="";const days=[31,28,31,30,31,30,31,31,30,31,30,31][month];for(let d=1;d<=days;d++){const camp=camps.find(c=>d>=c.from&&d<=c.to);cal+=`<div class="day ${camp?"active":""}"><strong>${d}</strong>${camp?`<br><small>${camp.name}</small>`:""}</div>`}document.getElementById("cal").innerHTML=cal;let html="";camps.forEach(c=>{html+=`<div class="campaign"><h3>${c.name}</h3><small>${c.from}-${c.to}</small></div>`});document.getElementById("camps").innerHTML=html||"<p style='color:#999;text-align:center'>Sin campañas</p>"}if(localStorage.getItem("user")){document.getElementById("login").classList.add("hide");document.getElementById("app").classList.remove("hide");load()}</script></body></html>
