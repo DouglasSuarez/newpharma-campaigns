@@ -270,12 +270,12 @@ loadFromFirestore();
             for (let day = 1; day <= daysInMonth; day++) {
                 const camp = camps.find(c => day >= c.dayStart && day <= c.dayEnd);
                 if (camp) {
-                    html += `<div class="day" style="border: 2px solid ${camp.color}; background-color: ${camp.color}20;">
+                    html += `<div class="day" style="border: 2px solid ${camp.color}; background-color: ${camp.color}20; cursor:pointer;" onclick="editCampaign(${camp.id})">
                         <div class="day-num">${day}</div>
                         <div class="day-camp" style="color: ${camp.color};">${camp.name}</div>
                     </div>`;
                 } else {
-                    html += `<div class="day"><div class="day-num">${day}</div></div>`;
+                    html += `<div class="day" style="cursor:pointer;" onclick="nuevaCampDia(${day})"><div class="day-num">${day}</div></div>`;
                 }
             }
 
@@ -390,6 +390,68 @@ saveToFirestore();
 load();
 loadFromFirestore();
         }
-    </script>
+    
+window.__editId = null;
+function llenarModal(c) {
+document.getElementById('campName').value = c ? c.name : '';
+document.getElementById('dayStart').value = c ? c.dayStart : 1;
+document.getElementById('dayEnd').value = c ? c.dayEnd : 1;
+document.getElementById('color').value = c ? c.color : '#6B8E23';
+document.getElementById('products').value = c ? c.products.join(', ') : '';
+document.getElementById('email_tasks').value = c ? c.email.join(String.fromCharCode(10)) : '';
+document.getElementById('social_tasks').value = c ? c.social.join(String.fromCharCode(10)) : '';
+document.getElementById('ecom_tasks').value = c ? c.ecom.join(String.fromCharCode(10)) : '';
+document.querySelector('#modal h3').textContent = c ? 'Editar Campaña' : 'Nueva Campaña';
+document.getElementById('modal').classList.add('show');
+}
+function nuevaCampDia(day) {
+window.__editId = null;
+llenarModal(null);
+document.getElementById('dayStart').value = day;
+document.getElementById('dayEnd').value = day;
+}
+function editCampaign(id) {
+const year = parseInt(document.getElementById('year').value);
+const month = parseInt(document.getElementById('month').value);
+const area = document.getElementById('area').value;
+const key = year + '_' + month;
+const c = (data[area][key] || []).find(function(x){ return x.id == id; });
+if (!c) return;
+window.__editId = id;
+llenarModal(c);
+}
+openNewCampaign = function() {
+window.__editId = null;
+llenarModal(null);
+};
+saveCampaign = function() {
+const name = document.getElementById('campName').value;
+const dayStart = parseInt(document.getElementById('dayStart').value);
+const dayEnd = parseInt(document.getElementById('dayEnd').value);
+const color = document.getElementById('color').value;
+const products = document.getElementById('products').value.split(',').map(function(p){return p.trim();}).filter(function(p){return p;});
+const email = document.getElementById('email_tasks').value.split(String.fromCharCode(10)).map(function(e){return e.trim();}).filter(function(e){return e;});
+const social = document.getElementById('social_tasks').value.split(String.fromCharCode(10)).map(function(s){return s.trim();}).filter(function(s){return s;});
+const ecom = document.getElementById('ecom_tasks').value.split(String.fromCharCode(10)).map(function(e){return e.trim();}).filter(function(e){return e;});
+if (!name || !dayStart || !dayEnd) { alert('Completa nombre y dias'); return; }
+const year = parseInt(document.getElementById('year').value);
+const month = parseInt(document.getElementById('month').value);
+const area = document.getElementById('area').value;
+const key = year + '_' + month;
+if (!data[area][key]) data[area][key] = [];
+if (window.__editId !== null) {
+const c = data[area][key].find(function(x){ return x.id == window.__editId; });
+if (c) { c.name=name; c.dates=dayStart+'-'+dayEnd; c.dayStart=dayStart; c.dayEnd=dayEnd; c.color=color; c.products=products; c.email=email; c.social=social; c.ecom=ecom; }
+window.__editId = null;
+} else {
+data[area][key].push({ id: nextId++, name: name, dates: dayStart+'-'+dayEnd, dayStart: dayStart, dayEnd: dayEnd, color: color, products: products, email: email, social: social, ecom: ecom });
+}
+localStorage.setItem('data', JSON.stringify(data));
+localStorage.setItem('nextId', nextId.toString());
+saveToFirestore();
+closeModal();
+load();
+};
+</script>
 </body>
 </html>
