@@ -57,7 +57,20 @@
         .form-group textarea { min-height: 50px; resize: vertical; }
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px; }
         .empty { text-align: center; color: #999; padding: 30px; }
-    </style>
+    .modal-tabs { display:flex; gap:4px; margin-bottom:15px; border-bottom:2px solid #eee; }
+.modal-tab { flex:1; padding:10px; background:none; border:none; border-bottom:3px solid transparent; cursor:pointer; font-weight:500; font-size:13px; color:#888; }
+.modal-tab.active { color:#6B8E23; border-bottom-color:#6B8E23; }
+.modal-pane { display:none; }
+.modal-pane.active { display:block; }
+.color-picker { display:flex; flex-wrap:wrap; gap:8px; }
+.color-swatch { width:30px; height:30px; border-radius:50%; cursor:pointer; border:3px solid transparent; }
+.color-swatch.sel { border-color:#333; }
+.prod-head { display:grid; grid-template-columns:2fr 1fr 64px 1fr 24px; gap:8px; font-size:10px; color:#999; font-weight:600; padding:0 6px; margin-bottom:4px; }
+.prod-row { display:grid; grid-template-columns:2fr 1fr 64px 1fr 24px; gap:8px; align-items:center; padding:6px; background:#f9f9f9; border-radius:6px; margin-bottom:6px; font-size:12px; }
+.prod-row .pname { font-weight:600; }
+.prod-row input { width:100%; padding:4px; border:1px solid #ddd; border-radius:4px; font-family:inherit; }
+.prod-x { color:#c62828; cursor:pointer; font-weight:bold; text-align:center; }
+</style>
 </head>
 <body>
     <div id="loginScreen" class="login show">
@@ -123,55 +136,42 @@
 
     <!-- MODAL NUEVA CAMPAÑA -->
     <div id="modal" class="modal">
-        <div class="modal-content">
-            <h3>Nueva Campaña</h3>
-            <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" id="campName">
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                <div class="form-group">
-                    <label>Día Inicio</label>
-                    <input type="number" id="dayStart" min="1" max="31" value="1">
-                </div>
-                <div class="form-group">
-                    <label>Día Fin</label>
-                    <input type="number" id="dayEnd" min="1" max="31" value="1">
-                </div>
-                <div class="form-group">
-                    <label>Color</label>
-                    <select id="color">
-                        <option value="#6B8E23">Verde</option>
-                        <option value="#FF6B6B">Rojo</option>
-                        <option value="#4ECDC4">Turquesa</option>
-                        <option value="#FFE66D">Amarillo</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Productos (separados por coma)</label>
-                <input type="text" id="products" placeholder="Reishi 3:1, Cordyceps">
-            </div>
-            <div class="form-group">
-                <label>Tareas Email (una por línea)</label>
-                <textarea id="email_tasks"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Tareas RRSS (una por línea)</label>
-                <textarea id="social_tasks"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Tareas E-commerce (una por línea)</label>
-                <textarea id="ecom_tasks"></textarea>
-            </div>
-            <div class="modal-buttons">
-                <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-                <button class="btn-primary" onclick="saveCampaign()">Guardar</button>
-            </div>
-        </div>
-    </div>
+<div class="modal-content">
+<h3 id="modalTitle">Nueva Campaña</h3>
+<div class="modal-tabs">
+<button type="button" class="modal-tab active" onclick="modalTab(0)">⚙️ Configuración</button>
+<button type="button" class="modal-tab" onclick="modalTab(1)">🏷️ Productos</button>
+<button type="button" class="modal-tab" onclick="modalTab(2)">📋 Actividades</button>
+</div>
+<div class="modal-pane active" id="pane0">
+<div class="form-group"><label>Nombre de la campaña</label><input type="text" id="campName"></div>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+<div class="form-group"><label>Día Inicio</label><input type="number" id="dayStart" min="1" max="31" value="1"></div>
+<div class="form-group"><label>Día Fin</label><input type="number" id="dayEnd" min="1" max="31" value="1"></div>
+</div>
+<div class="form-group"><label>Color</label><div id="colorPicker" class="color-picker"></div><input type="hidden" id="color" value="#6B8E23"></div>
+<div class="form-group"><label>Objetivo de la campaña</label><textarea id="objetivo" placeholder="Que busca lograr esta campana?"></textarea></div>
+</div>
+<div class="modal-pane" id="pane1">
+<div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+<select id="prodSelect" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:6px;"><option value="">Cargando productos...</option></select>
+<button type="button" class="btn-primary" onclick="agregarProducto()">Agregar</button>
+</div>
+<div id="prodList"></div>
+</div>
+<div class="modal-pane" id="pane2">
+<div class="form-group"><label>📣 Actividades de Marketing (una por línea)</label><textarea id="social_tasks"></textarea></div>
+<div class="form-group"><label>🛒 Actividades Ecommerce (una por línea)</label><textarea id="ecom_tasks"></textarea></div>
+<div class="form-group"><label>📧 Actividades de Email (una por línea)</label><textarea id="email_tasks"></textarea></div>
+</div>
+<div class="modal-buttons">
+<button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+<button class="btn-primary" onclick="saveCampaign()">Guardar</button>
+</div>
+</div>
+</div>
 
-    <script>
+<script>
 const firebaseConfig = {
 apiKey: "AIzaSyAbP3I8R8_iPxs1NOGFLw_umL0hWvBDOxM",
 authDomain: "newpharma-campaigns.firebaseapp.com",
@@ -451,6 +451,89 @@ localStorage.setItem('nextId', nextId.toString());
 saveToFirestore();
 closeModal();
 load();
+};
+
+window.__campProductos = [];
+window.__productosWeb = [];
+var COLORES = ['#6B8E23','#FF6B6B','#4ECDC4','#FFE66D','#1E88E5','#9C27B0','#FF9800','#E91E63','#00BCD4','#8BC34A','#795548','#607D8B'];
+function modalTab(i){ var ts=document.querySelectorAll('.modal-tab'); var ps=document.querySelectorAll('.modal-pane'); for(var t=0;t<ts.length;t++) ts[t].classList.toggle('active', t===i); for(var p=0;p<ps.length;p++) ps[p].classList.toggle('active', p===i); }
+function renderColorPicker(sel){ var cont=document.getElementById('colorPicker'); if(!cont) return; cont.innerHTML=''; COLORES.forEach(function(col){ var d=document.createElement('div'); d.className='color-swatch'+(col===sel?' sel':''); d.style.background=col; d.onclick=function(){ document.getElementById('color').value=col; cont.querySelectorAll('.color-swatch').forEach(function(x){x.classList.remove('sel');}); d.classList.add('sel'); }; cont.appendChild(d); }); }
+function fmtPrecio(n){ n=Math.round(n); return '$'+n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+function cargarProductosWeb(){ var sel=document.getElementById('prodSelect'); if(window.__productosWeb.length){ llenarSelectProd(); return; } fetch('https://www.newpharma.cl/products.json?limit=250').then(function(r){return r.json();}).then(function(d){ window.__productosWeb=(d.products||[]).map(function(p){ var v=(p.variants&&p.variants[0])?p.variants[0]:{}; return {nombre:p.title, full:parseInt(v.price||'0')}; }).filter(function(x){return x.full>0;}); llenarSelectProd(); }).catch(function(e){ sel.innerHTML='<option value="">Error al cargar productos</option>'; }); }
+function llenarSelectProd(){ var sel=document.getElementById('prodSelect'); var o='<option value="">Selecciona un producto...</option>'; window.__productosWeb.forEach(function(p,i){ o+='<option value="'+i+'">'+p.nombre+' ('+fmtPrecio(p.full)+')</option>'; }); sel.innerHTML=o; }
+function agregarProducto(){ var sel=document.getElementById('prodSelect'); var i=sel.value; if(i==='') return; var p=window.__productosWeb[parseInt(i)]; if(!p) return; if(window.__campProductos.some(function(x){return x.nombre===p.nombre;})) return; window.__campProductos.push({nombre:p.nombre, full:p.full, desc:0, oferta:p.full}); renderProdList(); }
+function quitarProducto(idx){ window.__campProductos.splice(idx,1); renderProdList(); }
+function cambiarDesc(idx,val){ var d=parseFloat(val)||0; if(d<0)d=0; if(d>100)d=100; window.__campProductos[idx].desc=d; window.__campProductos[idx].oferta=Math.round(window.__campProductos[idx].full*(1-d/100)); var of=document.getElementById('of-'+idx); if(of) of.textContent=fmtPrecio(window.__campProductos[idx].oferta); }
+function renderProdList(){ var cont=document.getElementById('prodList'); if(!cont) return; if(!window.__campProductos.length){ cont.innerHTML='<div style="color:#999; font-size:12px; padding:10px; text-align:center;">Sin productos. Selecciona uno arriba y dale Agregar.</div>'; return; } var html='<div class="prod-head"><span>Producto</span><span>Full</span><span>% Desc</span><span>Oferta</span><span></span></div>'; window.__campProductos.forEach(function(p,idx){ html+='<div class="prod-row">'; html+='<span class="pname">'+p.nombre+'</span>'; html+='<span>'+fmtPrecio(p.full)+'</span>'; html+='<input type="number" min="0" max="100" value="'+p.desc+'" oninput="cambiarDesc('+idx+', this.value)">'; html+='<span id="of-'+idx+'">'+fmtPrecio(p.oferta)+'</span>'; html+='<span class="prod-x" onclick="quitarProducto('+idx+')">x</span>'; html+='</div>'; }); cont.innerHTML=html; }
+llenarModal = function(c){
+document.getElementById('campName').value = c ? c.name : '';
+document.getElementById('dayStart').value = c ? c.dayStart : 1;
+document.getElementById('dayEnd').value = c ? c.dayEnd : 1;
+document.getElementById('color').value = c ? c.color : '#6B8E23';
+document.getElementById('objetivo').value = (c && c.objetivo) ? c.objetivo : '';
+document.getElementById('social_tasks').value = c ? c.social.join(String.fromCharCode(10)) : '';
+document.getElementById('ecom_tasks').value = c ? c.ecom.join(String.fromCharCode(10)) : '';
+document.getElementById('email_tasks').value = c ? c.email.join(String.fromCharCode(10)) : '';
+window.__campProductos = (c && c.prods) ? JSON.parse(JSON.stringify(c.prods)) : [];
+document.getElementById('modalTitle').textContent = c ? 'Editar Campaña' : 'Nueva Campaña';
+renderColorPicker(c ? c.color : '#6B8E23');
+renderProdList();
+cargarProductosWeb();
+modalTab(0);
+document.getElementById('modal').classList.add('show');
+};
+openNewCampaign = function(){ window.__editId = null; llenarModal(null); };
+nuevaCampDia = function(day){ window.__editId = null; llenarModal(null); document.getElementById('dayStart').value = day; document.getElementById('dayEnd').value = day; };
+editCampaign = function(id){ var year=parseInt(document.getElementById('year').value); var month=parseInt(document.getElementById('month').value); var area=document.getElementById('area').value; var key=year+'_'+month; var c=(data[area][key]||[]).find(function(x){return x.id==id;}); if(!c) return; window.__editId=id; llenarModal(c); };
+saveCampaign = function(){
+var name=document.getElementById('campName').value;
+var dayStart=parseInt(document.getElementById('dayStart').value);
+var dayEnd=parseInt(document.getElementById('dayEnd').value);
+var color=document.getElementById('color').value;
+var objetivo=document.getElementById('objetivo').value;
+var social=document.getElementById('social_tasks').value.split(String.fromCharCode(10)).map(function(s){return s.trim();}).filter(function(s){return s;});
+var ecom=document.getElementById('ecom_tasks').value.split(String.fromCharCode(10)).map(function(s){return s.trim();}).filter(function(s){return s;});
+var email=document.getElementById('email_tasks').value.split(String.fromCharCode(10)).map(function(s){return s.trim();}).filter(function(s){return s;});
+if(!name || !dayStart || !dayEnd){ alert('Completa nombre y dias'); modalTab(0); return; }
+var prods=JSON.parse(JSON.stringify(window.__campProductos));
+var products=prods.map(function(p){return p.nombre;});
+var year=parseInt(document.getElementById('year').value);
+var month=parseInt(document.getElementById('month').value);
+var area=document.getElementById('area').value;
+var key=year+'_'+month;
+if(!data[area][key]) data[area][key]=[];
+if(window.__editId!==null){
+var c=data[area][key].find(function(x){return x.id==window.__editId;});
+if(c){ c.name=name; c.dates=dayStart+'-'+dayEnd; c.dayStart=dayStart; c.dayEnd=dayEnd; c.color=color; c.objetivo=objetivo; c.prods=prods; c.products=products; c.email=email; c.social=social; c.ecom=ecom; }
+window.__editId=null;
+} else {
+data[area][key].push({ id: nextId++, name:name, dates:dayStart+'-'+dayEnd, dayStart:dayStart, dayEnd:dayEnd, color:color, objetivo:objetivo, prods:prods, products:products, email:email, social:social, ecom:ecom });
+}
+localStorage.setItem('data', JSON.stringify(data));
+localStorage.setItem('nextId', nextId.toString());
+saveToFirestore();
+closeModal();
+load();
+};
+renderCampaigns = function(){
+var year=parseInt(document.getElementById('year').value);
+var month=parseInt(document.getElementById('month').value);
+var area=document.getElementById('area').value;
+var key=year+'_'+month;
+var camps=data[area][key]||[];
+if(camps.length===0){ document.getElementById('campaigns').innerHTML='<div class="empty">Haz clic en un día del calendario o en "Agregar Campaña" para crear una</div>'; return; }
+document.getElementById('campaigns').innerHTML = camps.map(function(c){
+var prodHtml='';
+if(c.prods && c.prods.length){ prodHtml = c.prods.map(function(p){ var off = p.desc>0 ? (' <span style=\"color:#c62828;\">'+fmtPrecio(p.oferta)+' (-'+p.desc+'%)</span>') : (' '+fmtPrecio(p.oferta)); return '<div style=\"font-size:11px; margin-bottom:3px;\"><span class=\"product\">'+p.nombre+'</span>'+off+'</div>'; }).join(''); }
+else if(c.products && c.products.length){ prodHtml = '<div class=\"products\">'+c.products.map(function(p){return '<span class=\"product\">'+p+'</span>';}).join('')+'</div>'; }
+var objHtml = c.objetivo ? ('<div style=\"font-size:12px; color:#555; margin-bottom:10px; font-style:italic;\">🎯 '+c.objetivo+'</div>') : '';
+var tareas = '<div class=\"tasks\">';
+tareas += '<div class=\"task-group\"><div class=\"task-title\">📣 MARKETING</div>'+ (c.social||[]).map(function(t,i){return '<div class=\"task-item\"><input type=\"checkbox\" id=\"social_'+c.id+'_'+i+'\"><label for=\"social_'+c.id+'_'+i+'\" style=\"margin:0;\">'+t+'</label></div>';}).join('')+'</div>';
+tareas += '<div class=\"task-group\"><div class=\"task-title\">🛒 ECOMMERCE</div>'+ (c.ecom||[]).map(function(t,i){return '<div class=\"task-item\"><input type=\"checkbox\" id=\"ecom_'+c.id+'_'+i+'\"><label for=\"ecom_'+c.id+'_'+i+'\" style=\"margin:0;\">'+t+'</label></div>';}).join('')+'</div>';
+tareas += '<div class=\"task-group\"><div class=\"task-title\">📧 EMAIL</div>'+ (c.email||[]).map(function(t,i){return '<div class=\"task-item\"><input type=\"checkbox\" id=\"email_'+c.id+'_'+i+'\"><label for=\"email_'+c.id+'_'+i+'\" style=\"margin:0;\">'+t+'</label></div>';}).join('')+'</div>';
+tareas += '</div>';
+return '<div class=\"campaign\" style=\"border-left-color:'+c.color+';\"><div class=\"camp-title\">'+c.name+'</div><div class=\"camp-date\">📅 '+c.dates+'</div>'+objHtml+prodHtml+tareas+'<button class=\"btn-danger\" onclick=\"deleteCampaign(\''+c.id+'\')\" style=\"margin-top:10px; width:100%;\">🗑️ Eliminar</button></div>';
+}).join('');
 };
 </script>
 </body>
