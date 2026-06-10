@@ -163,6 +163,8 @@
 <button type="button" class="btn-primary" onclick="agregarProducto()">Agregar</button>
 </div>
 <div id="prodList"></div>
+<button type="button" class="btn-secondary" onclick="actualizarPreciosShopify()" style="margin-top:10px; font-size:12px;">🔄 Actualizar precios desde Shopify</button>
+<div id="prodStatus" style="font-size:11px; color:#6B8E23; margin-top:6px; min-height:14px;"></div>
 </div>
 <div class="modal-pane" id="pane2">
 <div class="form-group"><label>📣 Actividades de Marketing (una por línea)</label><textarea id="social_tasks"></textarea></div>
@@ -570,6 +572,37 @@ bloques.forEach(function(b){ if(b[1] && b[1].length){ if(y>275){doc.addPage(); y
 y+=5; doc.setDrawColor(225,225,225); doc.setLineWidth(0.3); doc.line(15,y-3,W-15,y-3); y+=4;
 });
 doc.save('Planificacion_'+MS[month]+'_'+year+'.pdf');
+}
+
+renderProdList = function(){
+var cont=document.getElementById('prodList');
+if(!cont) return;
+if(!window.__campProductos.length){ cont.innerHTML='<div style="color:#999; font-size:12px; padding:10px; text-align:center;">Sin productos. Selecciona uno arriba y dale Agregar.</div>'; return; }
+var html='<div class="prod-head"><span>Producto</span><span>Full</span><span>% Desc</span><span>Oferta</span><span></span></div>';
+window.__campProductos.forEach(function(p,idx){
+html+='<div class="prod-row">';
+html+='<span class="pname">'+p.nombre+'</span>';
+html+='<input type="number" min="0" value="'+p.full+'" oninput="cambiarFull('+idx+', this.value)">';
+html+='<input type="number" min="0" max="100" value="'+p.desc+'" oninput="cambiarDesc('+idx+', this.value)">';
+html+='<span id="of-'+idx+'">'+fmtPrecio(p.oferta)+'</span>';
+html+='<span class="prod-x" onclick="quitarProducto('+idx+')">x</span>';
+html+='</div>';
+});
+cont.innerHTML=html;
+};
+function cambiarFull(idx,val){ var f=parseFloat(val)||0; if(f<0)f=0; window.__campProductos[idx].full=f; window.__campProductos[idx].oferta=Math.round(f*(1-window.__campProductos[idx].desc/100)); var of=document.getElementById('of-'+idx); if(of) of.textContent=fmtPrecio(window.__campProductos[idx].oferta); }
+function actualizarPreciosShopify(){
+var st=document.getElementById('prodStatus');
+if(!window.__campProductos.length){ if(st) st.textContent='No hay productos en esta campaña para actualizar.'; return; }
+if(st){ st.style.color='#888'; st.textContent='Actualizando precios desde Shopify...'; }
+fetch('https://www.newpharma.cl/products.json?limit=250').then(function(r){return r.json();}).then(function(d){
+var web=(d.products||[]).map(function(p){ var v=(p.variants&&p.variants[0])?p.variants[0]:{}; return {nombre:p.title, full:parseInt(v.price||'0')}; }).filter(function(x){return x.full>0;});
+window.__productosWeb=web;
+var n=0;
+window.__campProductos.forEach(function(cp){ var w=web.find(function(x){return x.nombre===cp.nombre;}); if(w && w.full>0){ cp.full=w.full; cp.oferta=Math.round(w.full*(1-cp.desc/100)); n++; } });
+renderProdList();
+if(st){ st.style.color='#6B8E23'; st.textContent='Precios actualizados: '+n+' de '+window.__campProductos.length+' productos.'; }
+}).catch(function(e){ if(st){ st.style.color='#c62828'; st.textContent='No se pudieron actualizar los precios. Revisa la conexión.'; } });
 }
 </script>
 </body>
