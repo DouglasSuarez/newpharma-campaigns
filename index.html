@@ -30,6 +30,13 @@
         .day.empty { background: #f5f5f5; border: none; }
         .day-num { font-weight: 700; color: #333; font-size: 13px; }
         .day-camp { font-size: 9px; margin-top: 4px; font-weight: 600; }
+        .day-camp + .day-camp { margin-top: 3px; padding-top: 3px; border-top: 1px dashed #ccc; }
+        .porllegar { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 30px; }
+        .pll-card { background:#fff; border:1px solid #e4e9dc; border-left:4px solid #6B8E23; border-radius:10px; padding:14px; }
+        .pll-prod { font-size:14px; font-weight:700; color:#333; margin-bottom:4px; }
+        .pll-cant { font-size:13px; color:#6B8E23; font-weight:700; margin-bottom:8px; }
+        .pll-meta { font-size:11px; color:#888; line-height:1.6; }
+        .pll-meta b { color:#555; }
         .campaigns { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
         .campaign { background: #f9f9f9; border-radius: 10px; padding: 18px; border-left: 4px solid; }
         .camp-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
@@ -126,6 +133,9 @@
                         <option value="b2b">B2B</option>
                     </select>
                 </div>
+                <div class="control" style="display:flex; align-items:flex-end;">
+                    <button class="btn-secondary" onclick="openEntregas()" style="white-space:nowrap;">🚚 Próximas entregas</button>
+                </div>
             </div>
 
             <div class="content">
@@ -178,6 +188,21 @@
 </div>
 </div>
 
+<div id="entregasModal" class="modal">
+<div class="modal-content">
+<h3>🚚 Entregas</h3>
+<div class="modal-tabs">
+<button type="button" class="modal-tab active" id="tabProx" onclick="switchEntregaTab('prox')">Próximas entregas</button>
+<button type="button" class="modal-tab" id="tabUlt" onclick="switchEntregaTab('ult')">Última entrega</button>
+</div>
+<div class="modal-pane active" id="paneProx"></div>
+<div class="modal-pane" id="paneUlt"></div>
+<div class="modal-buttons">
+<button class="btn-secondary" onclick="closeEntregas()">Cerrar</button>
+</div>
+</div>
+</div>
+
 <script>
 const firebaseConfig = {
 apiKey: "AIzaSyAbP3I8R8_iPxs1NOGFLw_umL0hWvBDOxM",
@@ -198,6 +223,86 @@ db.collection('data').doc('main').set({ data, nextId, updatedAt: new Date() }).t
 }
 function loadFromFirestore() {
 db.collection('data').doc('main').get().then(doc=>{ if(doc.exists){ const d=doc.data(); if(d.data) data=d.data; if(d.nextId) nextId=d.nextId; ensureKeys(); localStorage.setItem('data',JSON.stringify(data)); localStorage.setItem('nextId',nextId.toString()); console.log("Cargado Firestore"); load(); } }).catch(e=>console.error(e));
+}
+
+/* ---- Entregas: modal con 2 pestañas (lee la app de Órdenes de Compra) ---- */
+let comprasData = {empresas:[], ordenes:[]};
+function loadCompras() {
+  db.collection('compras').doc('main').onSnapshot(doc=>{
+    if(doc.exists && doc.data().data){ comprasData = doc.data().data; if(document.getElementById('entregasModal').classList.contains('show')) renderEntregas(); }
+  }, e=>console.error('compras:',e));
+}
+function openEntregas(){ renderEntregas(); switchEntregaTab('prox'); document.getElementById('entregasModal').classList.add('show'); }
+function closeEntregas(){ document.getElementById('entregasModal').classList.remove('show'); }
+function switchEntregaTab(t){
+  document.getElementById('tabProx').classList.toggle('active', t==='prox');
+  document.getElementById('tabUlt').classList.toggle('active', t==='ult');
+  document.getElementById('paneProx').classList.toggle('active', t==='prox');
+  document.getElementById('paneUlt').classList.toggle('active', t==='ult');
+}
+function renderEntregas(){
+  renderProximas();
+  renderUltima();
+}
+function renderProximas(){
+  const cont = document.getElementById('paneProx');
+  const items = [];
+  (comprasData.ordenes||[]).forEach(oc=>{
+    if(oc.finalizado) return;
+    const prov = (comprasData.empresas||[]).find(e=>e.id===oc.empresaId);
+    (oc.lineas||[]).forEach(l=>{
+      const pend = (+l.solicitada||0) - (+l.entrega1||0) - (+l.entrega2||0);
+      if(pend>0){
+        items.push({ nombre:l.nombre||l.sku||'(producto)', cant:pend, oc:oc.numero||'(sin número)',
+          fechaOrden:oc.fecha||'', proveedor:prov?prov.nombre:'', fe1:oc.fechaEntrega1||'', fe2:oc.fechaEntrega2||'' });
+      }
+    });
+  });
+  if(!items.length){ cont.innerHTML='<div class="empty">No hay productos pendientes por llegar.</div>'; return; }
+  items.sort((a,b)=> (b.fechaOrden||'').localeCompare(a.fechaOrden||''));
+  cont.innerHTML = '<div class="porllegar">'+items.map(it=>{
+    let fe='';
+    if(it.fe1) fe+='<div>📅 Entrega 1: <b>'+it.fe1+'</b></div>';
+    if(it.fe2) fe+='<div>📅 Entrega 2: <b>'+it.fe2+'</b></div>';
+    return '<div class="pll-card">'+
+      '<div class="pll-prod">'+it.nombre+'</div>'+
+      '<div class="pll-cant">'+it.cant+' unidades por llegar</div>'+
+      '<div class="pll-meta">'+
+        '<div>OC: <b>'+it.oc+'</b>'+(it.proveedor?(' · '+it.proveedor):'')+'</div>'+
+        '<div>Fecha orden: <b>'+(it.fechaOrden||'—')+'</b></div>'+ fe +
+      '</div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+function renderUltima(){
+  const cont = document.getElementById('paneUlt');
+  const items = [];
+  (comprasData.ordenes||[]).forEach(oc=>{
+    const prov = (comprasData.empresas||[]).find(e=>e.id===oc.empresaId);
+    (oc.lineas||[]).forEach(l=>{
+      // Cada entrega ya recibida (cantidad > 0) es un evento de llegada
+      if((+l.entrega1||0)>0){
+        items.push({ nombre:l.nombre||l.sku||'(producto)', cant:+l.entrega1, oc:oc.numero||'(sin número)',
+          proveedor:prov?prov.nombre:'', fecha:oc.fechaEntrega1||oc.fecha||'', etiqueta:'Entrega 1' });
+      }
+      if((+l.entrega2||0)>0){
+        items.push({ nombre:l.nombre||l.sku||'(producto)', cant:+l.entrega2, oc:oc.numero||'(sin número)',
+          proveedor:prov?prov.nombre:'', fecha:oc.fechaEntrega2||oc.fecha||'', etiqueta:'Entrega 2' });
+      }
+    });
+  });
+  if(!items.length){ cont.innerHTML='<div class="empty">Aún no hay entregas recibidas.</div>'; return; }
+  items.sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||'')); // más reciente primero
+  cont.innerHTML = '<div class="porllegar">'+items.map(it=>{
+    return '<div class="pll-card" style="border-left-color:#2e7d32;">'+
+      '<div class="pll-prod">'+it.nombre+'</div>'+
+      '<div class="pll-cant" style="color:#2e7d32;">'+it.cant+' unidades recibidas</div>'+
+      '<div class="pll-meta">'+
+        '<div>OC: <b>'+it.oc+'</b>'+(it.proveedor?(' · '+it.proveedor):'')+'</div>'+
+        '<div>'+it.etiqueta+' · Fecha: <b>'+(it.fecha||'—')+'</b></div>'+
+      '</div>'+
+    '</div>';
+  }).join('')+'</div>';
 }
 const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
         const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -242,6 +347,7 @@ const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
                 init();
 load();
 loadFromFirestore();
+loadCompras();
             }
         }
 
@@ -275,11 +381,17 @@ loadFromFirestore();
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
-                const camp = camps.find(c => day >= c.dayStart && day <= c.dayEnd);
-                if (camp) {
-                    html += `<div class="day" style="border: 2px solid ${camp.color}; background-color: ${camp.color}20; cursor:pointer;" onclick="editCampaign(${camp.id})">
+                const dayCamps = camps.filter(c => day >= c.dayStart && day <= c.dayEnd);
+                if (dayCamps.length) {
+                    const main = dayCamps[0];
+                    const labels = dayCamps.map(c =>
+                        `<div class="day-camp" style="color: ${c.color};">${c.name}</div>`
+                    ).join('');
+                    const bg = dayCamps.length>1 ? '#f5f5f5' : `${main.color}20`;
+                    const border = dayCamps.length>1 ? '2px solid #999' : `2px solid ${main.color}`;
+                    html += `<div class="day" style="border: ${border}; background-color: ${bg}; cursor:pointer;" onclick="editCampaign(${main.id})">
                         <div class="day-num">${day}</div>
-                        <div class="day-camp" style="color: ${camp.color};">${camp.name}</div>
+                        ${labels}
                     </div>`;
                 } else {
                     html += `<div class="day" style="cursor:pointer;" onclick="nuevaCampDia(${day})"><div class="day-num">${day}</div></div>`;
@@ -396,6 +508,7 @@ saveToFirestore();
             init();
 load();
 loadFromFirestore();
+loadCompras();
         }
     
 window.__editId = null;
