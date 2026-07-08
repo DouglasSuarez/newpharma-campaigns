@@ -803,15 +803,15 @@ function renderTablaCostos(){
 var cont=document.getElementById('costosTabla');
 if(!cont) return;
 if(!window.__catalogoCostos.length){ cont.innerHTML='<div style="color:#999; font-size:12px; padding:10px;">Sin productos.</div>'; return; }
-var html='<table class="cost-table"><thead><tr><th>Producto</th><th>P. Venta</th><th>Costo</th><th>Margen $</th><th>Margen %</th></tr></thead><tbody>';
+var html='<table class="cost-table"><thead><tr><th>Producto</th><th>Precio Full</th><th>Costo</th><th>Margen $</th><th>Margen %</th></tr></thead><tbody>';
 window.__catalogoCostos.forEach(function(p,idx){
 var costo=window.__costos[p.nombre]||0;
-var margen=p.venta-costo;
-var pct=p.venta>0?(margen/p.venta*100):0;
+var margen=p.full-costo;
+var pct=p.full>0?(margen/p.full*100):0;
 var cls=costo>0?claseMargen(pct):'';
 html+='<tr>';
 html+='<td><div>'+p.nombre+'</div>'+(p.sku?('<div class="cost-sku">SKU: '+p.sku+'</div>'):'')+'</td>';
-html+='<td>'+fmtPrecio(p.venta)+'</td>';
+html+='<td>'+fmtPrecio(p.full)+'</td>';
 html+='<td><input type="number" min="0" value="'+(costo||'')+'" placeholder="0" oninput="setCosto('+idx+', this.value)"></td>';
 html+='<td id="mgd-'+idx+'" class="'+cls+'">'+(costo>0?fmtPrecio(margen):'-')+'</td>';
 html+='<td id="mgp-'+idx+'" class="'+cls+'">'+(costo>0?(pct.toFixed(1)+'%'):'-')+'</td>';
@@ -825,8 +825,8 @@ var p=window.__catalogoCostos[idx];
 if(!p) return;
 var c=parseFloat(val)||0; if(c<0)c=0;
 if(c===0){ delete window.__costos[p.nombre]; } else { window.__costos[p.nombre]=c; }
-var margen=p.venta-c;
-var pct=p.venta>0?(margen/p.venta*100):0;
+var margen=p.full-c;
+var pct=p.full>0?(margen/p.full*100):0;
 var cls=c>0?claseMargen(pct):'';
 var md=document.getElementById('mgd-'+idx), mp=document.getElementById('mgp-'+idx);
 if(md){ md.className=cls; md.textContent=c>0?fmtPrecio(margen):'-'; }
