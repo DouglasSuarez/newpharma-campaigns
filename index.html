@@ -82,6 +82,22 @@
 .btn-pdf:hover { background:#c62828; }
 .header img { display:block; border-radius:4px; }
 @media(max-width:760px){ .header { flex-direction:column; gap:14px; align-items:flex-start; } .header > div:last-child { flex-wrap:wrap; } }
+.btn-cost { background:#1E88E5; color:white; }
+.btn-cost:hover { background:#1565C0; }
+.cost-modal-content { max-width:920px; }
+.cost-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
+.cost-table th { text-align:left; padding:8px 6px; color:#888; font-weight:600; font-size:11px; border-bottom:2px solid #eee; }
+.cost-table td { padding:6px; border-bottom:1px solid #f0f0f0; vertical-align:middle; }
+.cost-table input { width:95px; padding:5px 6px; border:1px solid #ddd; border-radius:4px; font-family:inherit; }
+.cost-sku { color:#aaa; font-size:10px; margin-top:2px; }
+.margen-alto { color:#2e7d32; font-weight:600; }
+.margen-medio { color:#f57c00; font-weight:600; }
+.margen-bajo { color:#c62828; font-weight:600; }
+.promo-card { background:#fafafa; border-radius:8px; padding:12px 14px; margin-bottom:12px; border-left:4px solid #6B8E23; }
+.promo-card h4 { font-size:14px; margin-bottom:8px; color:#1a1a1a; }
+.promo-prod { display:grid; grid-template-columns:2.2fr 1fr 1fr 1fr 0.8fr; gap:6px; font-size:11px; padding:5px 0; border-bottom:1px solid #eee; align-items:center; }
+.promo-prod-head { color:#999; font-weight:600; font-size:10px; text-transform:uppercase; }
+.rent-resumen { background:#f0f7ff; border:1px solid #d0e4ff; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; }
 </style>
 </head>
 <body>
@@ -98,7 +114,7 @@
         <div class="container">
             <div class="header">
                 <div style="display:flex; align-items:center; gap:12px;"><img src="https://www.newpharma.cl/cdn/shop/files/logo-400x100_46b818c9-bfea-4838-b51e-4c07c18ad3d4.jpg" alt="NewPharma" style="height:40px; width:auto;"><h1>Planificación</h1></div>
-                <div style="display:flex; gap:10px; align-items:center;"><button class="btn-pdf" onclick="descargarPDF()">📄 Descargar PDF</button><button class="btn-primary" onclick="openNewCampaign()">➕ Agregar Campaña</button><button class="btn-secondary" onclick="logout()">Salir</button></div>
+                <div style="display:flex; gap:10px; align-items:center;"><button class="btn-cost" onclick="openCostos()">💰 Costos y Rentabilidad</button><button class="btn-pdf" onclick="descargarPDF()">📄 Descargar PDF</button><button class="btn-primary" onclick="openNewCampaign()">➕ Agregar Campaña</button><button class="btn-secondary" onclick="logout()">Salir</button></div>
             </div>
 
             <div class="controls">
@@ -199,6 +215,27 @@
 <div class="modal-pane" id="paneUlt"></div>
 <div class="modal-buttons">
 <button class="btn-secondary" onclick="closeEntregas()">Cerrar</button>
+</div>
+</div>
+</div>
+
+<div id="costosModal" class="modal">
+<div class="modal-content cost-modal-content">
+<h3>💰 Costos y Rentabilidad</h3>
+<div class="modal-tabs">
+<button type="button" class="modal-tab active" id="tabCostos" onclick="switchCostoTab('costos')">Costos por producto</button>
+<button type="button" class="modal-tab" id="tabRent" onclick="switchCostoTab('rent')">Rentabilidad de promociones</button>
+</div>
+<div class="modal-pane active" id="paneCostos">
+<div style="font-size:12px; color:#666; margin-bottom:8px;">Ingresa el costo de cada producto. Se guarda solo y se usa para calcular la rentabilidad de tus promociones.</div>
+<div id="costosTabla"></div>
+<div id="costosStatus" style="font-size:11px; color:#6B8E23; margin-top:8px; min-height:14px;"></div>
+</div>
+<div class="modal-pane" id="paneRent">
+<div id="rentContenido"></div>
+</div>
+<div class="modal-buttons">
+<button class="btn-secondary" onclick="closeCostos()">Cerrar</button>
 </div>
 </div>
 </div>
@@ -716,6 +753,127 @@ window.__campProductos.forEach(function(cp){ var w=web.find(function(x){return x
 renderProdList();
 if(st){ st.style.color='#6B8E23'; st.textContent='Precios actualizados: '+n+' de '+window.__campProductos.length+' productos.'; }
 }).catch(function(e){ if(st){ st.style.color='#c62828'; st.textContent='No se pudieron actualizar los precios. Revisa la conexión.'; } });
+}
+
+/* ===== COSTOS Y RENTABILIDAD ===== */
+window.__costos = {};
+window.__catalogoCostos = [];
+window.__costoTimer = null;
+function openCostos(){
+document.getElementById('costosModal').classList.add('show');
+switchCostoTab('costos');
+var cont=document.getElementById('costosTabla');
+if(cont) cont.innerHTML='<div style="color:#999; font-size:12px; padding:10px;">Cargando...</div>';
+cargarCostosFirestore(function(){ cargarCatalogoCostos(); });
+}
+function closeCostos(){ document.getElementById('costosModal').classList.remove('show'); }
+function switchCostoTab(t){
+document.getElementById('tabCostos').classList.toggle('active', t==='costos');
+document.getElementById('tabRent').classList.toggle('active', t==='rent');
+document.getElementById('paneCostos').classList.toggle('active', t==='costos');
+document.getElementById('paneRent').classList.toggle('active', t==='rent');
+if(t==='rent') renderRentabilidad();
+}
+function cargarCostosFirestore(cb){
+db.collection('data').doc('costos').get().then(function(doc){
+if(doc.exists && doc.data() && doc.data().costos) window.__costos = doc.data().costos;
+if(cb) cb();
+}).catch(function(e){ if(cb) cb(); });
+}
+function guardarCostosFirestore(){
+var st=document.getElementById('costosStatus');
+db.collection('data').doc('costos').set({ costos: window.__costos, updatedAt: new Date() }).then(function(){
+if(st){ st.style.color='#6B8E23'; st.textContent='Costos guardados.'; }
+}).catch(function(e){ if(st){ st.style.color='#c62828'; st.textContent='Error al guardar los costos.'; } });
+}
+function cargarCatalogoCostos(){
+var cont=document.getElementById('costosTabla');
+fetch('https://www.newpharma.cl/products.json?limit=250').then(function(r){return r.json();}).then(function(d){
+window.__catalogoCostos=(d.products||[]).map(function(p){
+var v=(p.variants&&p.variants[0])?p.variants[0]:{};
+var full=(parseInt(v.compare_at_price||'0')||parseInt(v.price||'0'));
+var venta=parseInt(v.price||'0')||full;
+return { nombre:p.title, sku:(v.sku||''), full:full, venta:venta };
+}).filter(function(x){return x.full>0;});
+renderTablaCostos();
+}).catch(function(e){ if(cont) cont.innerHTML='<div style="color:#c62828; font-size:12px; padding:10px;">No se pudo cargar el catálogo de newpharma.cl. Revisa la conexión.</div>'; });
+}
+function claseMargen(pct){ if(pct>=30) return 'margen-alto'; if(pct>=10) return 'margen-medio'; return 'margen-bajo'; }
+function renderTablaCostos(){
+var cont=document.getElementById('costosTabla');
+if(!cont) return;
+if(!window.__catalogoCostos.length){ cont.innerHTML='<div style="color:#999; font-size:12px; padding:10px;">Sin productos.</div>'; return; }
+var html='<table class="cost-table"><thead><tr><th>Producto</th><th>P. Venta</th><th>Costo</th><th>Margen $</th><th>Margen %</th></tr></thead><tbody>';
+window.__catalogoCostos.forEach(function(p,idx){
+var costo=window.__costos[p.nombre]||0;
+var margen=p.venta-costo;
+var pct=p.venta>0?(margen/p.venta*100):0;
+var cls=costo>0?claseMargen(pct):'';
+html+='<tr>';
+html+='<td><div>'+p.nombre+'</div>'+(p.sku?('<div class="cost-sku">SKU: '+p.sku+'</div>'):'')+'</td>';
+html+='<td>'+fmtPrecio(p.venta)+'</td>';
+html+='<td><input type="number" min="0" value="'+(costo||'')+'" placeholder="0" oninput="setCosto('+idx+', this.value)"></td>';
+html+='<td id="mgd-'+idx+'" class="'+cls+'">'+(costo>0?fmtPrecio(margen):'-')+'</td>';
+html+='<td id="mgp-'+idx+'" class="'+cls+'">'+(costo>0?(pct.toFixed(1)+'%'):'-')+'</td>';
+html+='</tr>';
+});
+html+='</tbody></table>';
+cont.innerHTML=html;
+}
+function setCosto(idx, val){
+var p=window.__catalogoCostos[idx];
+if(!p) return;
+var c=parseFloat(val)||0; if(c<0)c=0;
+if(c===0){ delete window.__costos[p.nombre]; } else { window.__costos[p.nombre]=c; }
+var margen=p.venta-c;
+var pct=p.venta>0?(margen/p.venta*100):0;
+var cls=c>0?claseMargen(pct):'';
+var md=document.getElementById('mgd-'+idx), mp=document.getElementById('mgp-'+idx);
+if(md){ md.className=cls; md.textContent=c>0?fmtPrecio(margen):'-'; }
+if(mp){ mp.className=cls; mp.textContent=c>0?(pct.toFixed(1)+'%'):'-'; }
+var st=document.getElementById('costosStatus'); if(st){ st.style.color='#888'; st.textContent='Guardando...'; }
+clearTimeout(window.__costoTimer);
+window.__costoTimer=setTimeout(guardarCostosFirestore, 900);
+}
+function renderRentabilidad(){
+var cont=document.getElementById('rentContenido');
+if(!cont) return;
+var MS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var areas=[['b2c','B2C'],['b2b','B2B']];
+var html='';
+var totalPromos=0, sinCosto=0;
+areas.forEach(function(ar){
+var meses=data[ar[0]]||{};
+Object.keys(meses).forEach(function(key){
+(meses[key]||[]).forEach(function(c){
+if(!c.prods || !c.prods.length) return;
+totalPromos++;
+var partes=key.split('_'); var mesNom=MS[parseInt(partes[1])]||''; var anio=partes[0];
+html+='<div class="promo-card" style="border-left-color:'+(c.color||'#6B8E23')+';">';
+html+='<h4>'+c.name+' <span style="font-weight:400; color:#999; font-size:11px;">('+ar[1]+' &middot; '+mesNom+' '+anio+' &middot; días '+c.dates+')</span></h4>';
+html+='<div class="promo-prod promo-prod-head"><span>Producto</span><span>P. Oferta</span><span>Costo</span><span>Margen $</span><span>Margen %</span></div>';
+c.prods.forEach(function(p){
+var costo=window.__costos[p.nombre]||0;
+var venta=p.oferta||p.full||0;
+var margen=venta-costo;
+var pct=venta>0?(margen/venta*100):0;
+var cls=costo>0?claseMargen(pct):'';
+if(costo===0) sinCosto++;
+html+='<div class="promo-prod">';
+html+='<span>'+p.nombre+'</span>';
+html+='<span>'+fmtPrecio(venta)+'</span>';
+html+='<span>'+(costo>0?fmtPrecio(costo):'<span class="margen-bajo">sin costo</span>')+'</span>';
+html+='<span class="'+cls+'">'+(costo>0?fmtPrecio(margen):'-')+'</span>';
+html+='<span class="'+cls+'">'+(costo>0?(pct.toFixed(1)+'%'):'-')+'</span>';
+html+='</div>';
+});
+html+='</div>';
+});
+});
+});
+if(totalPromos===0){ cont.innerHTML='<div style="color:#999; font-size:13px; padding:20px; text-align:center;">No hay campañas con productos todavía. Crea una campaña, agrégale productos con su descuento, y aquí verás si la promoción es rentable.</div>'; return; }
+var resumen='<div class="rent-resumen">Mostrando <b>'+totalPromos+'</b> promoción(es) con productos.'+(sinCosto>0?(' <span class="margen-bajo">'+sinCosto+' producto(s) sin costo cargado</span> &mdash; cárgalos en la pestaña Costos por producto para ver su margen.'):'')+'</div>';
+cont.innerHTML=resumen+html;
 }
 </script>
 </body>
