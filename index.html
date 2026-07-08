@@ -98,6 +98,17 @@
 .promo-prod { display:grid; grid-template-columns:2.2fr 1fr 1fr 1fr 0.8fr; gap:6px; font-size:11px; padding:5px 0; border-bottom:1px solid #eee; align-items:center; }
 .promo-prod-head { color:#999; font-weight:600; font-size:10px; text-transform:uppercase; }
 .rent-resumen { background:#f0f7ff; border:1px solid #d0e4ff; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; }
+.rent-search { width:100%; padding:9px 12px; border:1px solid #ddd; border-radius:6px; font-family:inherit; font-size:13px; margin-bottom:12px; box-sizing:border-box; }
+.rent-acc { border:1px solid #eee; border-radius:8px; margin-bottom:8px; overflow:hidden; }
+.rent-acc-head { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; background:#fafafa; border-left:4px solid #6B8E23; }
+.rent-acc-head:hover { background:#f2f2f2; }
+.rent-acc-arrow { color:#999; font-size:11px; transition:transform 0.15s; flex-shrink:0; }
+.rent-acc.open .rent-acc-arrow { transform:rotate(90deg); }
+.rent-acc-title { font-weight:600; font-size:13px; flex:1; min-width:0; }
+.rent-acc-meta { font-size:11px; color:#888; white-space:nowrap; }
+.rent-acc-body { display:none; padding:10px 14px; }
+.rent-acc.open .rent-acc-body { display:block; }
+.rent-empty { color:#999; font-size:13px; padding:20px; text-align:center; }
 </style>
 </head>
 <body>
@@ -838,42 +849,62 @@ window.__costoTimer=setTimeout(guardarCostosFirestore, 900);
 function renderRentabilidad(){
 var cont=document.getElementById('rentContenido');
 if(!cont) return;
-var MS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var areas=[['b2c','B2C'],['b2b','B2B']];
-var html='';
-var totalPromos=0, sinCosto=0;
+window.__rentCampanas=[];
+var idx=0;
 areas.forEach(function(ar){
 var meses=data[ar[0]]||{};
 Object.keys(meses).forEach(function(key){
 (meses[key]||[]).forEach(function(c){
 if(!c.prods || !c.prods.length) return;
-totalPromos++;
-var partes=key.split('_'); var mesNom=MS[parseInt(partes[1])]||''; var anio=partes[0];
-html+='<div class="promo-card" style="border-left-color:'+(c.color||'#6B8E23')+';">';
-html+='<h4>'+c.name+' <span style="font-weight:400; color:#999; font-size:11px;">('+ar[1]+' &middot; '+mesNom+' '+anio+' &middot; días '+c.dates+')</span></h4>';
-html+='<div class="promo-prod promo-prod-head"><span>Producto</span><span>P. Oferta</span><span>Costo</span><span>Margen $</span><span>Margen %</span></div>';
+var partes=key.split('_');
+window.__rentCampanas.push({ idx:idx++, c:c, area:ar[1], mesIdx:parseInt(partes[1]), anio:partes[0] });
+});
+});
+});
+if(!window.__rentCampanas.length){ cont.innerHTML='<div class="rent-empty">No hay campañas con productos todavía. Crea una campaña, agrégale productos con su descuento, y aquí verás si la promoción es rentable.</div>'; return; }
+var html='<input type="text" class="rent-search" placeholder="Buscar campaña por nombre..." oninput="filtrarRent(this.value)">';
+html+='<div class="rent-resumen">'+window.__rentCampanas.length+' promoción(es) con productos. Haz clic en una para ver el detalle.</div>';
+html+='<div id="rentAccList">'+window.__rentCampanas.map(renderRentAcc).join('')+'</div>';
+cont.innerHTML=html;
+}
+function renderRentAcc(item){
+var MSA=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+var c=item.c;
+var mes=MSA[item.mesIdx]||'';
+var fechas=c.dayStart+' – '+c.dayEnd+' '+mes+' '+item.anio;
+var sumaPct=0, nConCosto=0;
+c.prods.forEach(function(p){ var costo=window.__costos[p.nombre]||0; var venta=p.oferta||p.full||0; if(costo>0 && venta>0){ sumaPct+=(venta-costo)/venta*100; nConCosto++; } });
+var badge;
+if(nConCosto>0){ var prom=sumaPct/nConCosto; badge='<span class="'+claseMargen(prom)+'" style="font-size:11px; white-space:nowrap;">'+prom.toFixed(0)+'% margen</span>'; }
+else { badge='<span class="margen-bajo" style="font-size:11px; white-space:nowrap;">sin costos</span>'; }
+var body='<div class="promo-prod promo-prod-head"><span>Producto</span><span>P. Oferta</span><span>Costo</span><span>Margen $</span><span>Margen %</span></div>';
 c.prods.forEach(function(p){
 var costo=window.__costos[p.nombre]||0;
 var venta=p.oferta||p.full||0;
 var margen=venta-costo;
 var pct=venta>0?(margen/venta*100):0;
 var cls=costo>0?claseMargen(pct):'';
-if(costo===0) sinCosto++;
-html+='<div class="promo-prod">';
-html+='<span>'+p.nombre+'</span>';
-html+='<span>'+fmtPrecio(venta)+'</span>';
-html+='<span>'+(costo>0?fmtPrecio(costo):'<span class="margen-bajo">sin costo</span>')+'</span>';
-html+='<span class="'+cls+'">'+(costo>0?fmtPrecio(margen):'-')+'</span>';
-html+='<span class="'+cls+'">'+(costo>0?(pct.toFixed(1)+'%'):'-')+'</span>';
-html+='</div>';
+body+='<div class="promo-prod"><span>'+p.nombre+'</span><span>'+fmtPrecio(venta)+'</span><span>'+(costo>0?fmtPrecio(costo):'<span class="margen-bajo">sin costo</span>')+'</span><span class="'+cls+'">'+(costo>0?fmtPrecio(margen):'-')+'</span><span class="'+cls+'">'+(costo>0?(pct.toFixed(1)+'%'):'-')+'</span></div>';
 });
-html+='</div>';
+return '<div class="rent-acc" id="racc-'+item.idx+'">'+
+'<div class="rent-acc-head" style="border-left-color:'+(c.color||'#6B8E23')+';" onclick="toggleRentCard('+item.idx+')">'+
+'<span class="rent-acc-arrow">&#9656;</span>'+
+'<span class="rent-acc-title">'+c.name+'</span>'+
+'<span class="rent-acc-meta">'+item.area+' &middot; '+fechas+'</span>'+
+badge+
+'</div>'+
+'<div class="rent-acc-body">'+body+'</div>'+
+'</div>';
+}
+function toggleRentCard(idx){ var el=document.getElementById('racc-'+idx); if(el) el.classList.toggle('open'); }
+function filtrarRent(txt){
+txt=(txt||'').toLowerCase().trim();
+(window.__rentCampanas||[]).forEach(function(item){
+var el=document.getElementById('racc-'+item.idx);
+if(!el) return;
+el.style.display = (item.c.name.toLowerCase().indexOf(txt)!==-1) ? '' : 'none';
 });
-});
-});
-if(totalPromos===0){ cont.innerHTML='<div style="color:#999; font-size:13px; padding:20px; text-align:center;">No hay campañas con productos todavía. Crea una campaña, agrégale productos con su descuento, y aquí verás si la promoción es rentable.</div>'; return; }
-var resumen='<div class="rent-resumen">Mostrando <b>'+totalPromos+'</b> promoción(es) con productos.'+(sinCosto>0?(' <span class="margen-bajo">'+sinCosto+' producto(s) sin costo cargado</span> &mdash; cárgalos en la pestaña Costos por producto para ver su margen.'):'')+'</div>';
-cont.innerHTML=resumen+html;
 }
 </script>
 </body>
