@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NewPharma · Inteligencia de Audiencia (Klaviyo)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root{
+      --bg:#F5F7F1; --surface:#fff; --ink:#22271E; --inkSoft:#5B6151;
+      --line:#E4E8DC; --lime:#6FA82C; --limeSoft:#AED267; --coral:#E0894B;
+      --teal:#3F9C8B; --slate:#8A8F80;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;background:var(--bg);color:var(--ink);
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+    .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;}
+    .btn{transition:transform .08s,box-shadow .15s;border:none;cursor:pointer;font-weight:700;}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(34,39,30,.15);}
+    .btn:active{transform:translateY(0);}
+    header{background:var(--ink);color:#fff;padding:22px clamp(16px,4vw,40px);}
+    nav{background:#2C3227;border-bottom:1px solid #3A4033;}
+    .wrap{max-width:1200px;margin:0 auto;}
+    .tab{background:none;border:none;cursor:pointer;padding:13px 16px;font-size:13.5px;
+      font-weight:700;color:#9AA08D;border-bottom:3px solid transparent;}
+    .tab.active{color:#fff;border-bottom:3px solid var(--lime);}
+    main{max-width:1200px;margin:0 auto;padding:clamp(16px,4vw,32px);}
+    .sect{margin:34px 0 14px;display:flex;align-items:baseline;gap:12px;}
+    .sect .n{font-size:12px;font-weight:800;color:var(--lime);}
+    .sect h2{margin:0;font-size:18px;font-weight:800;letter-spacing:-.01em;}
+    .nota{margin:6px 0 0 24px;font-size:12.5px;color:var(--inkSoft);font-style:italic;}
+    .grid{display:grid;gap:14px;}
+    .kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
+    .cols3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+    .cols2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+    .kpi{padding:18px 18px 16px;border-top:3px solid var(--lime);}
+    .kpi .v{font-size:26px;font-weight:800;}
+    .kpi .l{font-size:12.5px;color:var(--inkSoft);margin-top:6px;}
+    .kpi .s{font-size:11px;color:var(--slate);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .panel{padding:18px;}
+    .panel h3{margin:0 0 12px;font-size:13.5px;font-weight:700;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{ text-align:left;padding:12px 14px;color:var(--inkSoft);font-weight:700;font-size:11.5px;
+      text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);}
+    td{padding:11px 14px;border-bottom:1px solid var(--line);}
+    tr:hover td{background:var(--bg);}
+    .chip{padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
+    .bar-bg{height:7px;background:var(--line);border-radius:4px;}
+    .bar-fg{height:100%;border-radius:4px;}
+    .row-lbl{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:3px;}
+    .donut{width:150px;height:150px;border-radius:50%;margin:0 auto;}
+    .legend{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--inkSoft);}
+    .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+    .msg{padding:16px;font-size:13.5px;}
+    .msg.err{border-color:#E7C3B3;background:#FBF1EC;color:#9A4A2E;}
+    select{width:100%;max-width:460px;padding:10px 12px;border-radius:9px;border:1px solid var(--line);
+      font-size:14px;background:#fff;color:var(--ink);}
+    .colbtn{padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;
+      border:1px solid var(--line);background:#fff;color:var(--inkSoft);}
+    .colbtn.on{border-color:var(--lime);background:#EAF3DD;color:#3F6218;}
+    .hidden{display:none;}
+    a.back{color:#B9BEB0;text-decoration:none;font-size:12px;}
+    a.back:hover{color:#fff;}
+    @media (prefers-reduced-motion:reduce){.btn{transition:none;}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;">
+      <div>
+        <a class="back" href="/">&larr; Volver a Campañas</a>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+          <span style="width:12px;height:26px;background:var(--lime);border-radius:3px;"></span>
+          <h1 style="margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em;">NewPharma</h1>
+        </div>
+        <p style="margin:6px 0 0 22px;font-size:13px;color:#B9BEB0;letter-spacing:.04em;text-transform:uppercase;">
+          Inteligencia de audiencia · Klaviyo
+        </p>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span id="updated" style="font-size:12px;color:#B9BEB0;"></span>
+        <button id="loadBtn" class="btn" style="background:var(--lime);color:#fff;padding:11px 20px;border-radius:10px;font-size:14px;">
+          Cargar datos
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="wrap" style="padding:0 clamp(16px,4vw,40px);display:flex;gap:4px;">
+      <button class="tab active" data-view="dashboard">Dashboard</button>
+      <button class="tab" data-view="export">Exportar a Excel</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- DASHBOARD -->
+    <div id="view-dashboard">
+      <div id="empty" class="card" style="padding:48px 24px;text-align:center;margin-top:24px;">
+        <h2 style="margin:0 0 8px;font-size:20px;font-weight:800;">Dashboard listo</h2>
+        <p style="margin:0 auto 20px;max-width:520px;color:var(--inkSoft);font-size:14px;line-height:1.6;">
+          Presiona <b>Cargar datos</b> para traer desde Klaviyo tus KPIs, la composición de
+          audiencia, campañas, flows y segmentos.
+        </p>
+        <button class="btn loadBtn2" style="background:var(--lime);color:#fff;padding:12px 24px;border-radius:10px;font-size:15px;">
+          Cargar datos
+        </button>
+      </div>
+      <div id="dash" class="hidden"></div>
+    </div>
+
+    <!-- EXPORT -->
+    <div id="view-export" class="hidden">
+      <div class="sect"><span class="n">—</span><h2>Exportar clientes a Excel</h2></div>
+      <p class="nota" style="margin-left:0;">Elige la fuente y las columnas. El archivo se genera y descarga en tu equipo.</p>
+
+      <div class="card" style="padding:22px;display:grid;gap:22px;margin-top:12px;">
+        <div>
+          <h3 style="margin:0 0 12px;font-size:13.5px;font-weight:700;">1 · Fuente de perfiles</h3>
+          <select id="srcSelect"><option value="all">Cargando fuentes…</option></select>
+          <div id="srcErr"></div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 12px;font-size:13.5px;font-weight:700;">2 · Columnas a exportar</h3>
+          <div id="colBtns" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 12px;font-size:13.5px;font-weight:700;">3 · Descargar</h3>
+          <button id="exportBtn" class="btn" style="background:var(--lime);color:#fff;padding:12px 22px;border-radius:10px;font-size:14.5px;">
+            Generar Excel
+          </button>
+          <p id="exportMsg" style="margin:12px 0 0;font-size:13px;"></p>
+          <p style="margin:12px 0 0;font-size:12px;color:var(--slate);">
+            Datos personales de clientes (Ley 19.628): guárdalos con cuidado y no los subas al repositorio.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer style="text-align:center;padding:24px;font-size:12px;color:var(--slate);">
+    Datos en vivo desde Klaviyo · NewPharma · Fase 1 (rendimiento de campañas/flows en Fase 2)
+  </footer>
+
+<script>
+const FN = "/.netlify/functions";
+const SERIES = ["#6FA82C","#E0894B","#3F9C8B","#AED267","#8A8F80","#C9553B","#5C7CB8","#B58A2E"];
+const clp = new Intl.NumberFormat("es-CL");
+const fmtInt = (n)=> (n==null||isNaN(n))?"—":clp.format(Math.round(n));
+const fmtPct = (n)=> (n==null||isNaN(n))?"—":Number(n).toFixed(1)+"%";
+const fmtDate = (s)=>{ if(!s) return "—"; const d=new Date(s); return isNaN(d)?"—":d.toLocaleDateString("es-CL",{day:"2-digit",month:"short",year:"2-digit"}); };
+const esc = (s)=> String(s==null?"":s).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const el = (id)=>document.getElementById(id);
+
+async function api(path){
+  const res = await fetch(`${FN}/${path}`);
+  let data={}; try{ data=await res.json(); }catch{}
+  if(!res.ok) throw new Error(data.error || `Error ${res.status}`);
+  return data;
+}
+
+/* ---------- Navegación ---------- */
+document.querySelectorAll(".tab").forEach((t)=>{
+  t.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach((x)=>x.classList.remove("active"));
+    t.classList.add("active");
+    const v=t.dataset.view;
+    el("view-dashboard").classList.toggle("hidden", v!=="dashboard");
+    el("view-export").classList.toggle("hidden", v!=="export");
+    el("loadBtn").style.display = v==="dashboard" ? "" : "none";
+    if(v==="export") initExport();
+  });
+});
+
+/* ---------- Dashboard ---------- */
+el("loadBtn").addEventListener("click", loadDashboard);
+document.querySelectorAll(".loadBtn2").forEach((b)=>b.addEventListener("click", loadDashboard));
+
+async function loadDashboard(){
+  const btn = el("loadBtn");
+  btn.disabled=true; btn.textContent="Consultando…";
+  el("empty").classList.add("hidden");
+  el("dash").classList.remove("hidden");
+  el("dash").innerHTML = `<p style="color:var(--slate);padding:24px;">Consultando Klaviyo…</p>`;
+
+  const [lists,segs,camps,flows,profs] = await Promise.all([
+    api("klaviyo-lists").catch(e=>({error:e.message})),
+    api("klaviyo-segments").catch(e=>({error:e.message})),
+    api("klaviyo-campaigns").catch(e=>({error:e.message})),
+    api("klaviyo-flows").catch(e=>({error:e.message})),
+    api("klaviyo-profiles").catch(e=>({error:e.message})),
+  ]);
+
+  el("dash").innerHTML = renderDashboard({lists,segs,camps,flows,profs});
+  el("updated").textContent = "Actualizado " + new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+  btn.disabled=false; btn.textContent="Actualizar datos";
+}
+
+function sectionTitle(n,title,nota){
+  return `<div class="sect"><span class="n">${n}</span><h2>${title}</h2></div>` + (nota?`<p class="nota">${esc(nota)}</p>`:"");
+}
+function errBox(msg){ return `<div class="card msg err">No se pudieron traer estos datos: ${esc(msg)}</div>`; }
+function emptyBox(msg){ return `<div class="card msg" style="color:var(--inkSoft);">${esc(msg)}</div>`; }
+
+function renderDashboard(d){
+  const topList = (d.lists.listas||[])[0];
+  const kpis = [
+    ["Perfiles muestreados", fmtInt(d.profs.muestra)],
+    ["Lista más grande", topList?fmtInt(topList.count):"—", topList?topList.name:""],
+    ["Listas", fmtInt((d.lists.listas||[]).length)],
+    ["Segmentos", fmtInt((d.segs.segmentos||[]).length)],
+    ["Ubicaciones distintas", fmtInt((d.profs.ubicacion||[]).length)],
+  ];
+  let html = sectionTitle("01","Resumen general");
+  html += `<div class="grid kpis">` + kpis.map(k=>`
+    <div class="card kpi"><div class="v num">${k[1]}</div><div class="l">${k[0]}</div>${k[2]?`<div class="s">${esc(k[2])}</div>`:""}</div>`).join("") + `</div>`;
+
+  html += sectionTitle("02","Composición de la audiencia", d.profs.nota);
+  html += d.profs.error ? errBox(d.profs.error) : renderDemografia(d.profs);
+
+  html += sectionTitle("03","Campañas recientes");
+  html += d.camps.error ? errBox(d.camps.error) : renderCampanas(d.camps.campanas||[]);
+
+  html += sectionTitle("04","Flows / automatizaciones");
+  html += d.flows.error ? errBox(d.flows.error) : renderFlows(d.flows.flows||[]);
+
+  html += sectionTitle("05","Listas y segmentos");
+  html += renderListas(d.lists, d.segs);
+  return html;
+}
+
+function bars(rows, valKey, labelKey, extra, color){
+  if(!rows.length) return emptyBox("Sin datos.");
+  const max = Math.max(...rows.map(r=>r[valKey]||0))||1;
+  return `<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">` + rows.map((r,i)=>`
+    <div>
+      <div class="row-lbl"><span style="font-weight:600;">${esc(r[labelKey])}</span>
+        <span class="num" style="color:var(--inkSoft);">${extra(r)}</span></div>
+      <div class="bar-bg"><div class="bar-fg" style="width:${((r[valKey]||0)/max)*100}%;background:${color||SERIES[i%SERIES.length]};"></div></div>
+    </div>`).join("") + `</div>`;
+}
+
+function renderDemografia(d){
+  const g=d.genero||[], e=d.edad||[], u=d.ubicacion||[];
+  // Donut género con conic-gradient
+  let donut="";
+  if(g.length){
+    let acc=0; const stops=g.map((x,i)=>{ const from=acc; acc+=x.porcentaje; return `${SERIES[i%SERIES.length]} ${from}% ${acc}%`; }).join(",");
+    donut = `<div class="donut" style="background:conic-gradient(${stops});-webkit-mask:radial-gradient(circle 42px at center,transparent 98%,#000 100%);mask:radial-gradient(circle 42px at center,transparent 98%,#000 100%);"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;justify-content:center;">` +
+      g.map((x,i)=>`<span class="legend"><span class="dot" style="background:${SERIES[i%SERIES.length]};"></span>${esc(x.categoria)} · ${fmtPct(x.porcentaje)}</span>`).join("") + `</div>`;
+  } else donut = emptyBox("Sin datos de género recopilados en Klaviyo.");
+
+  return `<div class="grid cols3">
+    <div class="card panel"><h3>Género</h3>${donut}</div>
+    <div class="card panel"><h3>Rango etario</h3>${ e.length ? bars(e,"porcentaje","rango",(r)=>fmtPct(r.porcentaje),"var(--lime)") : emptyBox("Sin datos de edad recopilados en Klaviyo.") }</div>
+    <div class="card panel"><h3>Ubicación (top)</h3>${ u.length ? bars(u,"perfiles","lugar",(r)=>fmtInt(r.perfiles)+(r.porcentaje!=null?" · "+fmtPct(r.porcentaje):"")) : emptyBox("Sin datos de ubicación.") }</div>
+  </div>`;
+}
+
+function chip(label){
+  const l=String(label||"").toLowerCase();
+  const bg=l==="email"?"#EAF3DD":l==="sms"?"#FBEFE4":"#EEF1E8";
+  const fg=l==="email"?"var(--lime)":l==="sms"?"var(--coral)":"var(--inkSoft)";
+  return `<span class="chip" style="background:${bg};color:${fg};">${esc(label||"—")}</span>`;
+}
+
+function renderCampanas(rows){
+  if(!rows.length) return emptyBox("Sin campañas recientes para mostrar.");
+  return `<div class="card" style="overflow-x:auto;"><table>
+    <thead><tr><th>Campaña</th><th>Canal</th><th>Estado</th><th style="text-align:right;">Creada</th></tr></thead>
+    <tbody>` + rows.map(c=>`<tr><td>${esc(c.name)}</td><td>${chip(c.channel)}</td><td>${esc(c.status||"—")}</td><td class="num" style="text-align:right;">${fmtDate(c.created)}</td></tr>`).join("") + `</tbody></table></div>`;
+}
+function renderFlows(rows){
+  if(!rows.length) return emptyBox("Sin flows para mostrar.");
+  return `<div class="card" style="overflow-x:auto;"><table>
+    <thead><tr><th>Flow</th><th>Estado</th></tr></thead>
+    <tbody>` + rows.map(f=>`<tr><td>${esc(f.name)}</td><td>${chip(f.status)}</td></tr>`).join("") + `</tbody></table></div>`;
+}
+function renderListas(lists,segs){
+  const l=lists.listas||[], s=segs.segmentos||[];
+  const nc = (rows,color)=> rows.length ? bars(rows,"count","name",(r)=>fmtInt(r.count),color) : emptyBox("Nada por aquí.");
+  return `<div class="grid cols2">
+    <div class="card panel"><h3>Listas</h3>${ lists.error?errBox(lists.error):nc(l,"var(--lime)") }</div>
+    <div class="card panel"><h3>Segmentos</h3>${ segs.error?errBox(segs.error):nc(s,"var(--teal)") }</div>
+  </div>`;
+}
+
+/* ---------- Exportación ---------- */
+const COLUMNS = [
+  {key:"nombre",label:"Nombre",on:true},{key:"apellido",label:"Apellido",on:true},
+  {key:"email",label:"Email",on:true},{key:"telefono",label:"Teléfono",on:true},
+  {key:"region",label:"Región",on:true},{key:"ciudad",label:"Ciudad",on:true},
+  {key:"pais",label:"País",on:false},{key:"direccion",label:"Dirección",on:false},
+  {key:"codigo_postal",label:"Código postal",on:false},{key:"organizacion",label:"Organización",on:false},
+  {key:"cargo",label:"Cargo",on:false},{key:"consentimiento_email",label:"Consent. email",on:false},
+  {key:"consentimiento_sms",label:"Consent. SMS",on:false},{key:"creado",label:"Fecha creación",on:false},
+  {key:"id",label:"ID Klaviyo",on:false},
+];
+const CAP = 25000;
+let exportInit=false, colState={}, srcData={lists:[],segs:[]};
+
+COLUMNS.forEach(c=>colState[c.key]=c.on);
+
+async function initExport(){
+  if(exportInit) return; exportInit=true;
+  // columnas
+  el("colBtns").innerHTML = COLUMNS.map(c=>`<button class="colbtn ${c.on?"on":""}" data-k="${c.key}">${c.on?"✓ ":""}${c.label}</button>`).join("");
+  el("colBtns").querySelectorAll(".colbtn").forEach(b=>{
+    b.addEventListener("click",()=>{
+      const k=b.dataset.k; colState[k]=!colState[k];
+      b.classList.toggle("on",colState[k]);
+      const lbl=COLUMNS.find(x=>x.key===k).label;
+      b.textContent=(colState[k]?"✓ ":"")+lbl;
+    });
+  });
+  // fuentes
+  try{
+    const [l,s] = await Promise.all([api("klaviyo-lists"),api("klaviyo-segments")]);
+    srcData.lists=l.listas||[]; srcData.segs=s.segmentos||[];
+    let opts = `<option value="all">Todos los perfiles de la cuenta</option>`;
+    if(srcData.segs.length){ opts += `<optgroup label="Segmentos">` + srcData.segs.map(x=>`<option value="segment:${x.id}">${esc(x.name)}${x.count!=null?` (${fmtInt(x.count)})`:""}</option>`).join("") + `</optgroup>`; }
+    if(srcData.lists.length){ opts += `<optgroup label="Listas">` + srcData.lists.map(x=>`<option value="list:${x.id}">${esc(x.name)}${x.count!=null?` (${fmtInt(x.count)})`:""}</option>`).join("") + `</optgroup>`; }
+    el("srcSelect").innerHTML = opts;
+  }catch(e){
+    el("srcSelect").innerHTML = `<option value="all">Todos los perfiles</option>`;
+    el("srcErr").innerHTML = errBox(e.message);
+  }
+}
+
+el("exportBtn").addEventListener("click", async ()=>{
+  const sel = COLUMNS.filter(c=>colState[c.key]);
+  const msg = el("exportMsg");
+  if(!sel.length){ msg.style.color="#9A4A2E"; msg.textContent="Selecciona al menos una columna."; return; }
+
+  const val = el("srcSelect").value;
+  const [tipo,id] = val==="all" ? ["all",""] : val.split(":");
+  const btn = el("exportBtn");
+  btn.disabled=true; msg.style.color="var(--inkSoft)";
+
+  const filas=[]; let cursor=null, pages=0, capped=false;
+  try{
+    do{
+      const qs = new URLSearchParams({source:tipo});
+      if(id) qs.set("id",id);
+      if(cursor) qs.set("cursor",cursor);
+      const {rows,next} = await api(`klaviyo-export?${qs.toString()}`);
+      filas.push(...rows);
+      msg.textContent = `Descargando… ${fmtInt(filas.length)} perfiles`;
+      cursor=next; pages++;
+      if(filas.length>=CAP){ capped=true; cursor=null; }
+    } while(cursor && pages<400);
+
+    const header = sel.map(c=>c.label);
+    const aoa = [header, ...filas.map(r=>sel.map(c=>r[c.key]??""))];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = sel.map(c=>({wch:Math.max(12,c.label.length+2)}));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Clientes");
+    const nombre = (val==="all"?"todos":(el("srcSelect").selectedOptions[0].text)).replace(/[^\w\-]+/g,"_").slice(0,40);
+    XLSX.writeFile(wb, `klaviyo_${nombre}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    msg.style.color="#3F6218";
+    msg.textContent = `${fmtInt(filas.length)} perfiles exportados${capped?` (tope de ${fmtInt(CAP)} alcanzado)`:""}.`;
+  }catch(e){
+    msg.style.color="#9A4A2E"; msg.textContent = "Error: " + e.message;
+  }
+  btn.disabled=false;
+});
+</script>
+</body>
+</html>
