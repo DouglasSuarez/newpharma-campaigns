@@ -503,6 +503,7 @@ async function cargarClientes(){
     if(!cliData.length){ cont.innerHTML=emptyBox("No hay clientes que cumplan el filtro en este período."); msg.textContent=""; btn.disabled=false; return; }
 
     // Fase 2: completar datos que falten, una sola vez por cliente
+    let f2err="";
     const faltan = cliData.filter(c=> c.profileId && !c.email);
     if(faltan.length){
       const ids = faltan.map(c=>c.profileId);
@@ -514,7 +515,7 @@ async function cargarClientes(){
         try{
           const pr = await api(`klaviyo-profiles-by-id?ids=${encodeURIComponent(chunk.join(","))}`);
           Object.assign(byId, pr.profiles||{});
-        }catch(_){}
+        }catch(e){ if(!f2err) f2err = e.message || String(e); }
       }
       cliData.forEach(c=>{
         const f = c.profileId && byId[c.profileId];
@@ -525,7 +526,9 @@ async function cargarClientes(){
     msg.style.color="#3F6218";
     msg.textContent = `${fmtInt(cliData.length)} clientes · ${fmtInt(total)} pedidos analizados${capped?` (tope de ${fmtInt(CLI_CAP)})`:""}.`;
     el("cliExport").style.display="";
-    cont.innerHTML = `<div class="card" style="overflow-x:auto;"><table>
+    cont.innerHTML =
+      (f2err?`<div class="card msg err" style="margin-bottom:12px;">No se pudieron completar los datos de clientes: ${esc(f2err)}</div>`:"")
+      + `<div class="card" style="overflow-x:auto;"><table>
       <thead><tr><th>Cliente</th><th>Email</th><th>Teléfono</th><th style="text-align:right;">Compras</th><th style="text-align:right;">Total</th><th style="text-align:right;">Última</th></tr></thead>
       <tbody>`+cliData.slice(0,200).map(c=>`<tr>
         <td>${esc((c.nombre+" "+c.apellido).trim()||"—")}</td>
