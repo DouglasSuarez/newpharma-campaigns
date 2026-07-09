@@ -27,7 +27,7 @@ exports.handler = async (event) => {
 
     const since = new Date(Date.now() - months * 30 * 24 * 3600 * 1000).toISOString();
     const filter = encodeURIComponent(`and(equals(metric_id,"${metricId}"),greater-or-equal(datetime,${since}))`);
-    const base = `/events/?filter=${filter}&include=profile&sort=-datetime`;
+    const base = `/events/?filter=${filter}&include=profile&fields[profile]=email,first_name,last_name,phone_number&sort=-datetime`;
     const path = cursor ? `${base}&page[cursor]=${encodeURIComponent(cursor)}` : base;
 
     const r = await klaviyo(path);
