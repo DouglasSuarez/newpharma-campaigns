@@ -473,6 +473,7 @@ async function cargarClientes(){
   msg.style.color="#666"; msg.textContent="Consultando pedidos…"; cont.innerHTML="";
   const mapa={}; let cursor=null, metricId="", pages=0, total=0, capped=false;
   try{
+    // Fase 1: recorrer pedidos y agrupar por cliente
     do{
       const qs=new URLSearchParams({months:meses});
       if(metricId) qs.set("metricId",metricId);
@@ -482,12 +483,17 @@ async function cargarClientes(){
       (d.rows||[]).forEach(o=>{
         const key = o.profileId || o.email;
         if(!key) return;
-        if(!mapa[key]) mapa[key]={nombre:o.nombre,apellido:o.apellido,email:o.email,telefono:o.telefono,compras:0,total:0,ultima:o.fecha||""};
-        mapa[key].compras++; mapa[key].total += o.valor||0;
-        if(o.fecha && o.fecha>mapa[key].ultima) mapa[key].ultima=o.fecha;
+        if(!mapa[key]) mapa[key]={profileId:o.profileId||"",nombre:o.nombre||"",apellido:o.apellido||"",email:o.email||"",telefono:o.telefono||"",compras:0,total:0,ultima:""};
+        const m=mapa[key];
+        m.compras++; m.total += o.valor||0;
+        if(o.fecha && o.fecha>m.ultima) m.ultima=o.fecha;
+        if(!m.email && o.email) m.email=o.email;
+        if(!m.nombre && o.nombre) m.nombre=o.nombre;
+        if(!m.apellido && o.apellido) m.apellido=o.apellido;
+        if(!m.telefono && o.telefono) m.telefono=o.telefono;
         total++;
       });
-      msg.textContent = `Procesando… ${fmtInt(total)} pedidos`;
+      msg.textContent = `Procesando pedidos… ${fmtInt(total)}`;
       cursor=d.next; pages++;
       if(total>=CLI_CAP){ capped=true; cursor=null; }
     } while(cursor && pages<100);
@@ -495,6 +501,27 @@ async function cargarClientes(){
     const min = parseInt(el("minCompras").value)||1;
     cliData = Object.values(mapa).filter(c=>c.compras>=min).sort((a,b)=> b.compras-a.compras || b.total-a.total);
     if(!cliData.length){ cont.innerHTML=emptyBox("No hay clientes que cumplan el filtro en este período."); msg.textContent=""; btn.disabled=false; return; }
+
+    // Fase 2: completar datos que falten, una sola vez por cliente
+    const faltan = cliData.filter(c=> c.profileId && !c.email);
+    if(faltan.length){
+      const ids = faltan.map(c=>c.profileId);
+      const byId={};
+      for(let i=0;i<ids.length;i+=90){
+        const chunk = ids.slice(i, i+90);
+        msg.style.color="#666";
+        msg.textContent = `Buscando datos de clientes… ${fmtInt(Math.min(i+chunk.length, ids.length))}/${fmtInt(ids.length)}`;
+        try{
+          const pr = await api(`klaviyo-profiles-by-id?ids=${encodeURIComponent(chunk.join(","))}`);
+          Object.assign(byId, pr.profiles||{});
+        }catch(_){}
+      }
+      cliData.forEach(c=>{
+        const f = c.profileId && byId[c.profileId];
+        if(f){ if(!c.email)c.email=f.email; if(!c.nombre)c.nombre=f.nombre; if(!c.apellido)c.apellido=f.apellido; if(!c.telefono)c.telefono=f.telefono; }
+      });
+    }
+
     msg.style.color="#3F6218";
     msg.textContent = `${fmtInt(cliData.length)} clientes · ${fmtInt(total)} pedidos analizados${capped?` (tope de ${fmtInt(CLI_CAP)})`:""}.`;
     el("cliExport").style.display="";
