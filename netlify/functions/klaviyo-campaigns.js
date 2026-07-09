@@ -3,8 +3,8 @@ const { klaviyo, ok, fail } = require("./_klaviyo");
 
 async function porCanal(channel) {
   const filter = encodeURIComponent(`equals(messages.channel,"${channel}")`);
-  const r = await klaviyo(`/campaigns/?filter=${filter}&sort=-created_at&page[size]=10`);
-  return (r.data || []).map((c) => ({
+  const r = await klaviyo(`/campaigns/?filter=${filter}&sort=-created_at`);
+  return (r.data || []).slice(0, 10).map((c) => ({
     name: (c.attributes && c.attributes.name) || "(sin nombre)",
     channel,
     status: (c.attributes && c.attributes.status) || null,
