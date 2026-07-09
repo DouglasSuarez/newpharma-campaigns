@@ -154,6 +154,7 @@
           <option value="last_12_months">Últimos 12 meses</option>
         </select>
         <button id="rendBtn" class="btn btn-primary">Cargar métricas</button>
+        <button id="rendExport" class="btn btn-secondary" style="display:none;">Descargar Excel</button>
       </div>
       <div id="rendResult" style="margin-top:14px;"></div>
     </div>
@@ -413,25 +414,26 @@ el("exportBtn").addEventListener("click", async ()=>{
 });
 
 /* ---------- Rendimiento de campañas ---------- */
-let rendInit=false;
+let rendInit=false, rendData=[];
 function initRendimiento(){
   if(rendInit) return; rendInit=true;
   el("rendBtn").addEventListener("click", cargarRendimiento);
+  el("rendExport").addEventListener("click", exportarRendimiento);
 }
 async function cargarRendimiento(){
   const tf = el("tfSelect").value;
   const cont = el("rendResult");
   const btn = el("rendBtn");
-  btn.disabled=true; btn.textContent="Cargando…";
+  btn.disabled=true; btn.textContent="Cargando…"; el("rendExport").style.display="none";
   cont.innerHTML = `<p style="color:#999;padding:12px;">Consultando Klaviyo…</p>`;
   try{
     const d = await api(`klaviyo-campaign-metrics?timeframe=${tf}`);
-    const rows = d.campanas||[];
-    if(!rows.length){ cont.innerHTML = emptyBox("Sin campañas de email con datos en este período."); }
+    rendData = d.campanas||[];
+    if(!rendData.length){ cont.innerHTML = emptyBox("Sin campañas de email con datos en este período."); }
     else {
       cont.innerHTML = `<div class="card" style="overflow-x:auto;"><table>
         <thead><tr><th>Campaña</th><th style="text-align:right;">Enviados</th><th style="text-align:right;">Apertura</th><th style="text-align:right;">Clics</th><th style="text-align:right;">Ventas</th><th style="text-align:right;">Ingresos</th></tr></thead>
-        <tbody>`+rows.map(c=>`<tr>
+        <tbody>`+rendData.map(c=>`<tr>
           <td>${esc(c.nombre)}</td>
           <td class="num" style="text-align:right;">${fmtInt(c.enviados)}</td>
           <td class="num" style="text-align:right;">${fmtPct(c.aperturaPct)}</td>
@@ -439,9 +441,21 @@ async function cargarRendimiento(){
           <td class="num" style="text-align:right;">${fmtInt(c.conversiones)}</td>
           <td class="num" style="text-align:right;">${fmtCLP(c.ingresos)}</td>
         </tr>`).join("")+`</tbody></table></div>`;
+      el("rendExport").style.display="";
     }
   }catch(e){ cont.innerHTML = errBox(e.message); }
   btn.disabled=false; btn.textContent="Cargar métricas";
+}
+function exportarRendimiento(){
+  if(!rendData.length) return;
+  const round1 = (n)=> (n==null||isNaN(n)) ? "" : Math.round(n*10)/10;
+  const aoa=[["Campaña","Enviados","Apertura %","Clics %","Ventas","Ingresos"]];
+  rendData.forEach(c=> aoa.push([c.nombre, c.enviados||0, round1(c.aperturaPct), round1(c.clicPct), c.conversiones||0, c.ingresos||0]));
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws["!cols"]=[{wch:34},{wch:10},{wch:11},{wch:9},{wch:9},{wch:14}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Rendimiento campañas");
+  const periodo = el("tfSelect").value;
+  XLSX.writeFile(wb, `rendimiento_campanas_${periodo}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 /* ---------- Clientes frecuentes ---------- */
