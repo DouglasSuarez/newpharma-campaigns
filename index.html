@@ -84,6 +84,8 @@
 @media(max-width:760px){ .header { flex-direction:column; gap:14px; align-items:flex-start; } .header > div:last-child { flex-wrap:wrap; } }
 .btn-cost { background:#1E88E5; color:white; }
 .btn-cost:hover { background:#1565C0; }
+.btn-klaviyo { background:#00897B; color:white; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+.btn-klaviyo:hover { background:#00695C; }
 .cost-modal-content { max-width:920px; }
 .cost-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
 .cost-table th { text-align:left; padding:8px 6px; color:#888; font-weight:600; font-size:11px; border-bottom:2px solid #eee; }
@@ -125,7 +127,7 @@
         <div class="container">
             <div class="header">
                 <div style="display:flex; align-items:center; gap:12px;"><img src="https://www.newpharma.cl/cdn/shop/files/logo-400x100_46b818c9-bfea-4838-b51e-4c07c18ad3d4.jpg" alt="NewPharma" style="height:40px; width:auto;"><h1>Planificación</h1></div>
-                <div style="display:flex; gap:10px; align-items:center;"><button class="btn-cost" onclick="openCostos()">💰 Costos y Rentabilidad</button><button class="btn-pdf" onclick="descargarPDF()">📄 Descargar PDF</button><button class="btn-primary" onclick="openNewCampaign()">➕ Agregar Campaña</button><button class="btn-secondary" onclick="logout()">Salir</button></div>
+                <div style="display:flex; gap:10px; align-items:center;"><button class="btn-cost" onclick="openCostos()">💰 Costos y Rentabilidad</button><a href="/klaviyo.html" class="btn-klaviyo">📊 Audiencia Klaviyo</a><button class="btn-pdf" onclick="descargarPDF()">📄 Descargar PDF</button><button class="btn-primary" onclick="openNewCampaign()">➕ Agregar Campaña</button><button class="btn-secondary" onclick="logout()">Salir</button></div>
             </div>
 
             <div class="controls">
