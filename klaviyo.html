@@ -4,94 +4,98 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NewPharma · Inteligencia de Audiencia (Klaviyo)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root{
-      --bg:#F5F7F1; --surface:#fff; --ink:#22271E; --inkSoft:#5B6151;
-      --line:#E4E8DC; --lime:#6FA82C; --limeSoft:#AED267; --coral:#E0894B;
-      --teal:#3F9C8B; --slate:#8A8F80;
+      --bg:#f5f7fa; --surface:#fff; --ink:#1a1a1a; --inkSoft:#555;
+      --line:#e0e0e0; --lime:#6B8E23; --limeSoft:#8BC34A; --coral:#E67E22;
+      --teal:#1E88E5; --slate:#999;
     }
-    *{box-sizing:border-box;}
-    body{margin:0;background:var(--bg);color:var(--ink);
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
-    .num{font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
-    .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;}
-    .btn{transition:transform .08s,box-shadow .15s;border:none;cursor:pointer;font-weight:700;}
-    .btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(34,39,30,.15);}
-    .btn:active{transform:translateY(0);}
-    header{background:var(--ink);color:#fff;padding:22px clamp(16px,4vw,40px);}
-    nav{background:#2C3227;border-bottom:1px solid #3A4033;}
-    .wrap{max-width:1200px;margin:0 auto;}
-    .tab{background:none;border:none;cursor:pointer;padding:13px 16px;font-size:13.5px;
-      font-weight:700;color:#9AA08D;border-bottom:3px solid transparent;}
-    .tab.active{color:#fff;border-bottom:3px solid var(--lime);}
-    main{max-width:1200px;margin:0 auto;padding:clamp(16px,4vw,32px);}
-    .sect{margin:34px 0 14px;display:flex;align-items:baseline;gap:12px;}
-    .sect .n{font-size:12px;font-weight:800;color:var(--lime);}
-    .sect h2{margin:0;font-size:18px;font-weight:800;letter-spacing:-.01em;}
-    .nota{margin:6px 0 0 24px;font-size:12.5px;color:var(--inkSoft);font-style:italic;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);
+      min-height:100vh;padding:20px;color:var(--ink);}
+    .num{font-variant-numeric:tabular-nums;}
+    .card{background:var(--surface);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+    .btn{padding:10px 20px;border:none;border-radius:6px;font-weight:500;font-size:14px;cursor:pointer;font-family:inherit;}
+    .btn-primary{background:var(--lime);color:#fff;}
+    .btn-primary:hover{background:#556b1a;}
+    .btn-secondary{background:#f0f0f0;color:#333;}
+    .btn-secondary:hover{background:#e6e6e6;}
+    header{max-width:1200px;margin:0 auto 20px;background:#fff;border-radius:12px;
+      box-shadow:0 2px 8px rgba(0,0,0,.1);padding:20px 25px;display:flex;flex-wrap:wrap;
+      gap:16px;align-items:center;justify-content:space-between;}
+    .h-left{display:flex;align-items:center;gap:14px;}
+    .h-left img{height:40px;width:auto;display:block;border-radius:4px;}
+    .h-title{font-size:22px;font-weight:700;color:#1a1a1a;}
+    .h-sub{font-size:12px;color:#888;letter-spacing:.03em;text-transform:uppercase;margin-top:2px;}
+    .h-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    nav{max-width:1200px;margin:0 auto 20px;background:#fff;border-radius:12px;
+      box-shadow:0 2px 8px rgba(0,0,0,.1);padding:6px 12px;display:flex;gap:4px;}
+    .tab{background:none;border:none;cursor:pointer;padding:12px 18px;font-size:14px;
+      font-weight:500;color:#888;border-bottom:3px solid transparent;font-family:inherit;}
+    .tab.active{color:var(--lime);border-bottom-color:var(--lime);}
+    main{max-width:1200px;margin:0 auto;}
+    .sect{margin:28px 0 14px;display:flex;align-items:baseline;gap:12px;}
+    .sect .n{font-size:12px;font-weight:700;color:var(--lime);}
+    .sect h2{margin:0;font-size:18px;font-weight:700;color:#1a1a1a;}
+    .nota{margin:6px 0 0 24px;font-size:12.5px;color:#777;font-style:italic;}
     .grid{display:grid;gap:14px;}
     .kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
     .cols3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
     .cols2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
-    .kpi{padding:18px 18px 16px;border-top:3px solid var(--lime);}
-    .kpi .v{font-size:26px;font-weight:800;}
-    .kpi .l{font-size:12.5px;color:var(--inkSoft);margin-top:6px;}
-    .kpi .s{font-size:11px;color:var(--slate);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .kpi{padding:18px;border-top:3px solid var(--lime);}
+    .kpi .v{font-size:26px;font-weight:700;color:#1a1a1a;}
+    .kpi .l{font-size:12.5px;color:#666;margin-top:6px;}
+    .kpi .s{font-size:11px;color:#999;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .panel{padding:18px;}
-    .panel h3{margin:0 0 12px;font-size:13.5px;font-weight:700;}
+    .panel h3{margin:0 0 12px;font-size:13.5px;font-weight:600;color:#333;}
     table{width:100%;border-collapse:collapse;font-size:13px;}
-    th{ text-align:left;padding:12px 14px;color:var(--inkSoft);font-weight:700;font-size:11.5px;
-      text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);}
-    td{padding:11px 14px;border-bottom:1px solid var(--line);}
-    tr:hover td{background:var(--bg);}
-    .chip{padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
-    .bar-bg{height:7px;background:var(--line);border-radius:4px;}
+    th{text-align:left;padding:12px 14px;color:#999;font-weight:600;font-size:11px;
+      text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #eee;}
+    td{padding:11px 14px;border-bottom:1px solid #f0f0f0;color:#333;}
+    tr:hover td{background:#fafafa;}
+    .chip{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;}
+    .bar-bg{height:7px;background:#eee;border-radius:4px;}
     .bar-fg{height:100%;border-radius:4px;}
     .row-lbl{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:3px;}
     .donut{width:150px;height:150px;border-radius:50%;margin:0 auto;}
-    .legend{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--inkSoft);}
+    .legend{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#666;}
     .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
-    .msg{padding:16px;font-size:13.5px;}
-    .msg.err{border-color:#E7C3B3;background:#FBF1EC;color:#9A4A2E;}
-    select{width:100%;max-width:460px;padding:10px 12px;border-radius:9px;border:1px solid var(--line);
-      font-size:14px;background:#fff;color:var(--ink);}
-    .colbtn{padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;
-      border:1px solid var(--line);background:#fff;color:var(--inkSoft);}
-    .colbtn.on{border-color:var(--lime);background:#EAF3DD;color:#3F6218;}
+    .msg{padding:16px;font-size:13.5px;border-radius:8px;}
+    .msg.err{background:#ffebee;color:#c62828;}
+    select{width:100%;max-width:460px;padding:9px 12px;border-radius:6px;border:1px solid #ddd;
+      font-size:14px;background:#fff;color:#333;font-family:inherit;}
+    .colbtn{padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:500;cursor:pointer;
+      border:1px solid #ddd;background:#fff;color:#666;font-family:inherit;}
+    .colbtn.on{border-color:var(--lime);background:#eef5e0;color:#4a6318;}
     .hidden{display:none;}
-    a.back{color:#B9BEB0;text-decoration:none;font-size:12px;}
-    a.back:hover{color:#fff;}
-    @media (prefers-reduced-motion:reduce){.btn{transition:none;}}
+    a.back{color:#6B8E23;text-decoration:none;font-size:13px;font-weight:500;}
+    a.back:hover{text-decoration:underline;}
+    @media(max-width:760px){header{flex-direction:column;align-items:flex-start;}}
   </style>
 </head>
 <body>
   <header>
-    <div class="wrap" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;">
+    <div class="h-left">
+      <img src="https://www.newpharma.cl/cdn/shop/files/logo-400x100_46b818c9-bfea-4838-b51e-4c07c18ad3d4.jpg" alt="NewPharma">
       <div>
-        <a class="back" href="/">&larr; Volver a Campañas</a>
-        <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
-          <span style="width:12px;height:26px;background:var(--lime);border-radius:3px;"></span>
-          <h1 style="margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em;">NewPharma</h1>
-        </div>
-        <p style="margin:6px 0 0 22px;font-size:13px;color:#B9BEB0;letter-spacing:.04em;text-transform:uppercase;">
-          Inteligencia de audiencia · Klaviyo
-        </p>
+        <div class="h-title">Inteligencia de Audiencia</div>
+        <div class="h-sub">Klaviyo · NewPharma</div>
       </div>
-      <div style="display:flex;align-items:center;gap:14px;">
-        <span id="updated" style="font-size:12px;color:#B9BEB0;"></span>
-        <button id="loadBtn" class="btn" style="background:var(--lime);color:#fff;padding:11px 20px;border-radius:10px;font-size:14px;">
-          Cargar datos
-        </button>
-      </div>
+    </div>
+    <div class="h-right">
+      <span id="updated" style="font-size:12px;color:#999;"></span>
+      <a class="back" href="/">&larr; Volver</a>
+      <button id="loadBtn" class="btn btn-primary">Cargar datos</button>
     </div>
   </header>
 
   <nav>
-    <div class="wrap" style="padding:0 clamp(16px,4vw,40px);display:flex;gap:4px;">
-      <button class="tab active" data-view="dashboard">Dashboard</button>
-      <button class="tab" data-view="export">Exportar a Excel</button>
-    </div>
+    <button class="tab active" data-view="dashboard">Dashboard</button>
+    <button class="tab" data-view="rendimiento">Rendimiento</button>
+    <button class="tab" data-view="clientes">Clientes frecuentes</button>
+    <button class="tab" data-view="export">Exportar a Excel</button>
   </nav>
 
   <main>
@@ -103,7 +107,7 @@
           Presiona <b>Cargar datos</b> para traer desde Klaviyo tus KPIs, la composición de
           audiencia, campañas, flows y segmentos.
         </p>
-        <button class="btn loadBtn2" style="background:var(--lime);color:#fff;padding:12px 24px;border-radius:10px;font-size:15px;">
+        <button class="btn btn-primary loadBtn2">
           Cargar datos
         </button>
       </div>
@@ -127,7 +131,7 @@
         </div>
         <div>
           <h3 style="margin:0 0 12px;font-size:13.5px;font-weight:700;">3 · Descargar</h3>
-          <button id="exportBtn" class="btn" style="background:var(--lime);color:#fff;padding:12px 22px;border-radius:10px;font-size:14.5px;">
+          <button id="exportBtn" class="btn btn-primary">
             Generar Excel
           </button>
           <p id="exportMsg" style="margin:12px 0 0;font-size:13px;"></p>
@@ -137,18 +141,56 @@
         </div>
       </div>
     </div>
+
+    <!-- RENDIMIENTO -->
+    <div id="view-rendimiento" class="hidden">
+      <div class="sect"><span class="n">—</span><h2>Rendimiento de campañas (email)</h2></div>
+      <p class="nota" style="margin-left:0;">Enviados, apertura, clics y ventas atribuidas por campaña, según el período.</p>
+      <div class="card" style="padding:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px;">
+        <label style="font-size:13px;font-weight:500;">Período:</label>
+        <select id="tfSelect" style="max-width:220px;">
+          <option value="last_30_days">Últimos 30 días</option>
+          <option value="last_90_days">Últimos 90 días</option>
+          <option value="last_12_months">Últimos 12 meses</option>
+        </select>
+        <button id="rendBtn" class="btn btn-primary">Cargar métricas</button>
+      </div>
+      <div id="rendResult" style="margin-top:14px;"></div>
+    </div>
+
+    <!-- CLIENTES FRECUENTES -->
+    <div id="view-clientes" class="hidden">
+      <div class="sect"><span class="n">—</span><h2>Clientes frecuentes</h2></div>
+      <p class="nota" style="margin-left:0;">Compradores en el período elegido, con cantidad de compras y total gastado. Exportable a Excel.</p>
+      <div class="card" style="padding:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px;">
+        <label style="font-size:13px;font-weight:500;">Período:</label>
+        <select id="mesesSelect" style="max-width:170px;">
+          <option value="3">Últimos 3 meses</option>
+          <option value="6" selected>Últimos 6 meses</option>
+          <option value="12">Últimos 12 meses</option>
+        </select>
+        <label style="font-size:13px;font-weight:500;">Mín. compras:</label>
+        <input id="minCompras" type="number" min="1" value="1" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:inherit;">
+        <button id="cliBtn" class="btn btn-primary">Cargar clientes</button>
+        <button id="cliExport" class="btn btn-secondary" style="display:none;">Descargar Excel</button>
+      </div>
+      <p id="cliMsg" style="margin:12px 0 0;font-size:13px;color:#666;"></p>
+      <div id="cliResult" style="margin-top:14px;"></div>
+      <p style="margin:14px 0 0;font-size:12px;color:#999;">Datos personales de clientes (Ley 19.628): guárdalos con cuidado.</p>
+    </div>
   </main>
 
   <footer style="text-align:center;padding:24px;font-size:12px;color:var(--slate);">
-    Datos en vivo desde Klaviyo · NewPharma · Fase 1 (rendimiento de campañas/flows en Fase 2)
+    Datos en vivo desde Klaviyo · NewPharma · Inteligencia de audiencia
   </footer>
 
 <script>
 const FN = "/.netlify/functions";
-const SERIES = ["#6FA82C","#E0894B","#3F9C8B","#AED267","#8A8F80","#C9553B","#5C7CB8","#B58A2E"];
+const SERIES = ["#6B8E23","#E67E22","#1E88E5","#8BC34A","#999999","#c62828","#5C7CB8","#F9A825"];
 const clp = new Intl.NumberFormat("es-CL");
 const fmtInt = (n)=> (n==null||isNaN(n))?"—":clp.format(Math.round(n));
 const fmtPct = (n)=> (n==null||isNaN(n))?"—":Number(n).toFixed(1)+"%";
+const fmtCLP = (n)=> (n==null||isNaN(n))?"—":new Intl.NumberFormat("es-CL",{style:"currency",currency:"CLP",maximumFractionDigits:0}).format(n);
 const fmtDate = (s)=>{ if(!s) return "—"; const d=new Date(s); return isNaN(d)?"—":d.toLocaleDateString("es-CL",{day:"2-digit",month:"short",year:"2-digit"}); };
 const esc = (s)=> String(s==null?"":s).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const el = (id)=>document.getElementById(id);
@@ -161,15 +203,17 @@ async function api(path){
 }
 
 /* ---------- Navegación ---------- */
+const VIEWS = ["dashboard","rendimiento","clientes","export"];
 document.querySelectorAll(".tab").forEach((t)=>{
   t.addEventListener("click",()=>{
     document.querySelectorAll(".tab").forEach((x)=>x.classList.remove("active"));
     t.classList.add("active");
     const v=t.dataset.view;
-    el("view-dashboard").classList.toggle("hidden", v!=="dashboard");
-    el("view-export").classList.toggle("hidden", v!=="export");
+    VIEWS.forEach((k)=> el("view-"+k).classList.toggle("hidden", k!==v));
     el("loadBtn").style.display = v==="dashboard" ? "" : "none";
     if(v==="export") initExport();
+    if(v==="rendimiento") initRendimiento();
+    if(v==="clientes") initClientes();
   });
 });
 
@@ -367,6 +411,102 @@ el("exportBtn").addEventListener("click", async ()=>{
   }
   btn.disabled=false;
 });
+
+/* ---------- Rendimiento de campañas ---------- */
+let rendInit=false;
+function initRendimiento(){
+  if(rendInit) return; rendInit=true;
+  el("rendBtn").addEventListener("click", cargarRendimiento);
+}
+async function cargarRendimiento(){
+  const tf = el("tfSelect").value;
+  const cont = el("rendResult");
+  const btn = el("rendBtn");
+  btn.disabled=true; btn.textContent="Cargando…";
+  cont.innerHTML = `<p style="color:#999;padding:12px;">Consultando Klaviyo…</p>`;
+  try{
+    const d = await api(`klaviyo-campaign-metrics?timeframe=${tf}`);
+    const rows = d.campanas||[];
+    if(!rows.length){ cont.innerHTML = emptyBox("Sin campañas de email con datos en este período."); }
+    else {
+      cont.innerHTML = `<div class="card" style="overflow-x:auto;"><table>
+        <thead><tr><th>Campaña</th><th style="text-align:right;">Enviados</th><th style="text-align:right;">Apertura</th><th style="text-align:right;">Clics</th><th style="text-align:right;">Ventas</th><th style="text-align:right;">Ingresos</th></tr></thead>
+        <tbody>`+rows.map(c=>`<tr>
+          <td>${esc(c.nombre)}</td>
+          <td class="num" style="text-align:right;">${fmtInt(c.enviados)}</td>
+          <td class="num" style="text-align:right;">${fmtPct(c.aperturaPct)}</td>
+          <td class="num" style="text-align:right;">${fmtPct(c.clicPct)}</td>
+          <td class="num" style="text-align:right;">${fmtInt(c.conversiones)}</td>
+          <td class="num" style="text-align:right;">${fmtCLP(c.ingresos)}</td>
+        </tr>`).join("")+`</tbody></table></div>`;
+    }
+  }catch(e){ cont.innerHTML = errBox(e.message); }
+  btn.disabled=false; btn.textContent="Cargar métricas";
+}
+
+/* ---------- Clientes frecuentes ---------- */
+let cliInit=false, cliData=[];
+const CLI_CAP=8000;
+function initClientes(){
+  if(cliInit) return; cliInit=true;
+  el("cliBtn").addEventListener("click", cargarClientes);
+  el("cliExport").addEventListener("click", exportarClientes);
+}
+async function cargarClientes(){
+  const meses = el("mesesSelect").value;
+  const btn=el("cliBtn"), msg=el("cliMsg"), cont=el("cliResult");
+  btn.disabled=true; el("cliExport").style.display="none";
+  msg.style.color="#666"; msg.textContent="Consultando pedidos…"; cont.innerHTML="";
+  const mapa={}; let cursor=null, metricId="", pages=0, total=0, capped=false;
+  try{
+    do{
+      const qs=new URLSearchParams({months:meses});
+      if(metricId) qs.set("metricId",metricId);
+      if(cursor) qs.set("cursor",cursor);
+      const d = await api(`klaviyo-orders?${qs.toString()}`);
+      metricId = d.metricId || metricId;
+      (d.rows||[]).forEach(o=>{
+        const key = o.profileId || o.email;
+        if(!key) return;
+        if(!mapa[key]) mapa[key]={nombre:o.nombre,apellido:o.apellido,email:o.email,telefono:o.telefono,compras:0,total:0,ultima:o.fecha||""};
+        mapa[key].compras++; mapa[key].total += o.valor||0;
+        if(o.fecha && o.fecha>mapa[key].ultima) mapa[key].ultima=o.fecha;
+        total++;
+      });
+      msg.textContent = `Procesando… ${fmtInt(total)} pedidos`;
+      cursor=d.next; pages++;
+      if(total>=CLI_CAP){ capped=true; cursor=null; }
+    } while(cursor && pages<100);
+
+    const min = parseInt(el("minCompras").value)||1;
+    cliData = Object.values(mapa).filter(c=>c.compras>=min).sort((a,b)=> b.compras-a.compras || b.total-a.total);
+    if(!cliData.length){ cont.innerHTML=emptyBox("No hay clientes que cumplan el filtro en este período."); msg.textContent=""; btn.disabled=false; return; }
+    msg.style.color="#3F6218";
+    msg.textContent = `${fmtInt(cliData.length)} clientes · ${fmtInt(total)} pedidos analizados${capped?` (tope de ${fmtInt(CLI_CAP)})`:""}.`;
+    el("cliExport").style.display="";
+    cont.innerHTML = `<div class="card" style="overflow-x:auto;"><table>
+      <thead><tr><th>Cliente</th><th>Email</th><th>Teléfono</th><th style="text-align:right;">Compras</th><th style="text-align:right;">Total</th><th style="text-align:right;">Última</th></tr></thead>
+      <tbody>`+cliData.slice(0,200).map(c=>`<tr>
+        <td>${esc((c.nombre+" "+c.apellido).trim()||"—")}</td>
+        <td>${esc(c.email||"—")}</td>
+        <td>${esc(c.telefono||"—")}</td>
+        <td class="num" style="text-align:right;">${fmtInt(c.compras)}</td>
+        <td class="num" style="text-align:right;">${fmtCLP(c.total)}</td>
+        <td class="num" style="text-align:right;">${fmtDate(c.ultima)}</td>
+      </tr>`).join("")+`</tbody></table></div>`
+      + (cliData.length>200?`<p class="nota" style="margin-left:0;">Mostrando 200 de ${fmtInt(cliData.length)}. El Excel incluye todos.</p>`:"");
+  }catch(e){ cont.innerHTML=errBox(e.message); msg.textContent=""; }
+  btn.disabled=false;
+}
+function exportarClientes(){
+  if(!cliData.length) return;
+  const aoa=[["Nombre","Apellido","Email","Teléfono","Compras","Total gastado","Última compra"]];
+  cliData.forEach(c=> aoa.push([c.nombre,c.apellido,c.email,c.telefono,c.compras,c.total,c.ultima?String(c.ultima).slice(0,10):""]));
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws["!cols"]=[{wch:16},{wch:16},{wch:26},{wch:14},{wch:9},{wch:14},{wch:12}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Clientes frecuentes");
+  XLSX.writeFile(wb, `clientes_frecuentes_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
 </script>
 </body>
 </html>
