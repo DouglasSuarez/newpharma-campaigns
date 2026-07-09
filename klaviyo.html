@@ -508,8 +508,8 @@ async function cargarClientes(){
     if(faltan.length){
       const ids = faltan.map(c=>c.profileId);
       const byId={};
-      for(let i=0;i<ids.length;i+=90){
-        const chunk = ids.slice(i, i+90);
+      for(let i=0;i<ids.length;i+=15){
+        const chunk = ids.slice(i, i+15);
         msg.style.color="#666";
         msg.textContent = `Buscando datos de clientes… ${fmtInt(Math.min(i+chunk.length, ids.length))}/${fmtInt(ids.length)}`;
         try{
